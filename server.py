@@ -1,7 +1,8 @@
-from flask import Flask, url_for, send_from_directory, request, escape, render_template, jsonify, make_response
+from flask import Flask, request, render_template, jsonify, make_response
 import logging
 import os
 from werkzeug.utils import secure_filename
+import datetime
 
 # from werkzeug import secure_filename
 
@@ -35,7 +36,8 @@ def api_root():
         img.save(saved_path)
         data = {
             'username': "Thang",
-            'email': "thang181997@gmail.com"
+            'email': "thang181997@gmail.com",
+            'time': str(datetime.datetime.now())
         }
         return make_response(jsonify(data), 200)
         # return send_from_directory(app.config['UPLOAD_FOLDER'], img_name, as_attachment=True)
