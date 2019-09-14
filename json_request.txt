@@ -1,0 +1,4 @@
+{'language': 'Python', 'framework': 'Flask', 'website': 'Scotch', 'version_info': {'python': 3.4, 'flask': 0.12}, 'examples': ['query', 'form', 'json'], 'boolean_test': True}
+=========================
+{'function': 'json post', 'message': 'successful', 'method': 'POST', 'time': '2019-09-15 02:05:57.894464'}
+=========================

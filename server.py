@@ -45,6 +45,25 @@ def api_root():
         return "Where is the image?"
 
 
+@app.route('/json-post/', methods=['POST'])
+def json_post():
+    app.logger.info(PROJECT_HOME)
+    if request.method == 'POST':
+        req_data = request.get_json()
+        print(req_data)
+        f = open("{}/json_request.txt".format(PROJECT_HOME), "a+")
+        f.writelines(str(req_data))
+        f.writelines("\n=========================\n")
+        f.close()
+        data = {
+            'method': "POST",
+            'function': "json post",
+            'message': "successful",
+            'time': str(datetime.datetime.now())
+        }
+        return make_response(jsonify(data), 200)
+
+
 @app.route('/', methods=['GET'])
 def display():
     return render_template('formPartial.html')
