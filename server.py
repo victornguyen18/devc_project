@@ -8,7 +8,7 @@ import datetime
 # from werkzeug import secure_filename
 
 app = Flask('fe_project', template_folder='templates')  # still relative to module
-file_handler = logging.FileHandler('app.log')
+file_handler = logging.FileHandler('server.log')
 app.logger.addHandler(file_handler)
 app.logger.setLevel(logging.INFO)
 

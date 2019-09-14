@@ -2,4 +2,4 @@ import os
 import sys
 
 sys.path.insert(0, os.path.realpath(''))
-from app import app as application
+from server import app as application
