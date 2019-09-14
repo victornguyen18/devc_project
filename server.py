@@ -4,11 +4,14 @@ import logging
 import os
 from werkzeug.utils import secure_filename
 import datetime
+import os
+
+file_path = os.path.realpath('');
 
 # from werkzeug import secure_filename
 
 app = Flask('fe_project', template_folder='templates')  # still relative to module
-file_handler = logging.FileHandler('server.log')
+file_handler = logging.FileHandler(file_path + '/server.log')
 app.logger.addHandler(file_handler)
 app.logger.setLevel(logging.INFO)
 
