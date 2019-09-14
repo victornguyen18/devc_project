@@ -64,9 +64,17 @@ def json_post():
         return make_response(jsonify(data), 200)
 
 
+#
+# @app.route('/', methods=['GET'])
+# def display():
+#     return render_template('formPartial.html')
+
+
 @app.route('/', methods=['GET'])
-def display():
-    return render_template('formPartial.html')
+def display_json():
+    with open("{}/json_request.txt".format(PROJECT_HOME), "r") as f:
+        content = f.read()
+    return render_template('json_request.html', content=content)
 
 
 if __name__ == '__main__':
