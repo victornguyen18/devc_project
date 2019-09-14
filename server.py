@@ -4,18 +4,14 @@ import logging
 import os
 from werkzeug.utils import secure_filename
 import datetime
-import os
 
-file_path = os.path.realpath('');
+PROJECT_HOME = os.path.dirname(os.path.realpath(__file__))
 
-# from werkzeug import secure_filename
-
-app = Flask('fe_project', template_folder='/var/www/html/devc_project/templates')  # still relative to module
-file_handler = logging.FileHandler('/var/www/html/devc_project/server.log')
+app = Flask('fe_project', template_folder='{}/templates'.format(PROJECT_HOME))  # still relative to module
+file_handler = logging.FileHandler('{}/server.log'.format(PROJECT_HOME))
 app.logger.addHandler(file_handler)
 app.logger.setLevel(logging.INFO)
 
-PROJECT_HOME = os.path.dirname(os.path.realpath(__file__))
 UPLOAD_FOLDER = '{}/uploads/'.format(PROJECT_HOME)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
