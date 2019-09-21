@@ -51,7 +51,9 @@ def json_post():
     if request.method == 'POST':
         req_data = request.get_json()
         print(req_data)
-        f = open("{}/json_request.txt".format(PROJECT_HOME), "a+")
+        # f = open("{}/json_request.txt".format(PROJECT_HOME), "a+")
+        f = open("{}/json_request.txt".format(PROJECT_HOME), "w+")
+        f.writelines(str(datetime.datetime.now()))
         f.writelines(str(req_data))
         f.writelines("\n=========================\n")
         f.close()
