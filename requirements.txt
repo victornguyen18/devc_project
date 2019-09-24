@@ -5,3 +5,7 @@ itsdangerous
 Jinja2
 MarkupSafe
 Werkzeug
+tesseract
+tensorflow
+opencv-python
+dlib
