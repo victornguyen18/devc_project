@@ -4,6 +4,7 @@ import logging
 import os
 from werkzeug.utils import secure_filename
 import datetime
+import base64
 
 PROJECT_HOME = os.path.dirname(os.path.realpath(__file__))
 
@@ -60,6 +61,24 @@ def json_post():
         data = {
             'method': "POST",
             'function': "json post",
+            'message': "successful",
+            'time': str(datetime.datetime.now())
+        }
+        return make_response(jsonify(data), 200)
+
+
+@app.route('/json-image-post/', methods=['POST'])
+def json_image_post():
+    if request.method == 'POST':
+        req_data = dict(request.get_json())
+        print(req_data['image1'])
+        img_data = base64.b64decode(req_data['image1'])
+        file_name = 'test.jpg';
+        with open(file_name, 'wb') as f:
+            f.write(img_data)
+        data = {
+            'method': "POST",
+            'function': "json image post",
             'message': "successful",
             'time': str(datetime.datetime.now())
         }

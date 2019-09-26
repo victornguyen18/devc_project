@@ -1,6 +1,2 @@
-2019-09-22 00:11:34.650122{'glossary': {'title': 'example glossary', 'GlossDiv': {'title': 'S', 'GlossList': {'GlossEntry': {'ID': 'SGML', 'SortAs': 'SGML', 'GlossTerm': 'Standard Generalized Markup Language', 'Acronym': 'SGML', 'Abbrev': 'ISO 8879:1986', 'GlossDef': {'para': 'A meta-markup language, used to create markup languages such as DocBook.', 'GlossSeeAlso': ['GML', 'XML']}, 'GlossSee': 'markup'}}}}}
-=========================
-{u'glossary': {u'GlossDiv': {u'GlossList': {u'GlossEntry': {u'GlossDef': {u'GlossSeeAlso': [u'GML', u'XML'], u'para': u'A meta-markup language, used to create markup languages such as DocBook.'}, u'GlossSee': u'markup', u'Acronym': u'SGML', u'GlossTerm': u'Standard Generalized Markup Language', u'Abbrev': u'ISO 8879:1986', u'SortAs': u'SGML', u'ID': u'SGML'}}, u'title': u'S'}, u'title': u'example glossary'}}
-=========================
-{u'glossary': {u'GlossDiv': {u'GlossList': {u'GlossEntry': {u'GlossDef': {u'GlossSeeAlso': [u'GML', u'XML'], u'para': u'A meta-markup language, used to create markup languages such as DocBook.'}, u'GlossSee': u'markup', u'Acronym': u'SGML', u'GlossTerm': u'Standard Generalized Markup Language', u'Abbrev': u'ISO 8879:1986', u'SortAs': u'SGML', u'ID': u'SGML'}}, u'title': u'S'}, u'title': u'example glossary'}}
+2019-09-26 15:13:34.868386{'image1': '3112', 'image2': '3123123'}
 =========================
