@@ -3,11 +3,12 @@ import numpy as np
 import math
 import imutils
 
-img = cv2.imread('NDMT_CCCD.jpg')
+path = "../image/template_checking/"
+
+img = cv2.imread(path + 'NDMT_CCCD.jpg')
 ratio = img.shape[0] / 500.0
 orig = img.copy()
 img_scale = imutils.resize(img, height=500)
-# cv2_imshow(img_scale)
 
 # gray = cv2.cv2.cvtColor(img_scale, cv2.COLOR_BGR2GRAY)
 gray = cv2.GaussianBlur(img_scale, (3, 3), 3)
@@ -215,7 +216,7 @@ national_symbol = bin_img[:int(bin_img.shape[0] * ratio_y),
                   ]
 
 # cv2_imshow(national_symbol)
-format_standard = cv2.imread('standard_format_CCCd.jpg', cv2.IMREAD_GRAYSCALE)
+format_standard = cv2.imread(path + 'standard_format_CCCd.jpg', cv2.IMREAD_GRAYSCALE)
 # cv2_imshow(format_standard)
 # print(format_standard.shape)
 
