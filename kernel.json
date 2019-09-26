@@ -1,0 +1,11 @@
+{
+ "argv": [
+  "/home/user/anaconda3/envs/myenv/bin/python",
+  "-m",
+  "ipykernel_launcher",
+  "-f",
+  "{connection_file}"
+ ],
+ "display_name": "myenv",
+ "language": "python"
+}
