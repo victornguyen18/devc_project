@@ -20,4 +20,4 @@ cmake
 dlib
 imutils
 scikit-image
-Keras
+Keras==2.2.5

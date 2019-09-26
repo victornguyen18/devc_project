@@ -7,6 +7,7 @@ import datetime
 import base64
 import binascii
 from controller.template_checking import TemplateChecking
+from controller.facial_verification import FacialVerification
 
 PROJECT_HOME = os.path.dirname(os.path.realpath(__file__))
 
@@ -14,7 +15,8 @@ app = Flask('fe_project', template_folder='{}/templates'.format(PROJECT_HOME))  
 file_handler = logging.FileHandler('{}/server.log'.format(PROJECT_HOME))
 app.logger.addHandler(file_handler)
 app.logger.setLevel(logging.INFO)
-
+app.config['APPLICATION_ROOT'] = PROJECT_HOME
+print(app.config['APPLICATION_ROOT'])
 UPLOAD_FOLDER = '{}/uploads/'.format(PROJECT_HOME)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -109,6 +111,8 @@ def json_image_post():
         # with open("{}/image/cccd/NDMT_CCCD.jpg".format(PROJECT_HOME), "rb") as image_file:
         #     image_1_result = str(base64.b64encode(image_file.read()), 'utf-8')
         result_template_checking_file = '{}/{}_result_template_checking.jpg'.format(path_uploads, time_now)
+
+        # Template Checking
         try:
             template_checking_model = TemplateChecking(cccd_front_file)
             template_checking_model.processing(result_template_checking_file)
@@ -116,17 +120,38 @@ def json_image_post():
         except Exception as e:
             data = {
                 'status': 400,
-                'message': str(e) + ". Some thing is wrong. Please contact your admin!!",
+                'message': str(e) + ".Something is wrong. Please contact your admin!!",
                 'time': str(datetime.datetime.now())
             }
             return make_response(jsonify(data), 200)
+
+        # Facial Verification
+        # try:
+        cccd_front_file = 'image/cccd/NDMT_CCCD.jpg'
+        cccd_selfie_file = 'image/facial_verification/NPXT_Portrait.jpg'
+        facial_verification = FacialVerification(cccd_front_file, cccd_selfie_file)
+        message_facial = facial_verification.processing()
+        if not message_facial:
+            data = {
+                'status': 400,
+                'message': "Something in facial verification is wrong. Please contact your admin!!",
+                'time': str(datetime.datetime.now())
+            }
+            return make_response(jsonify(data), 200)
+        # except Exception as e:
+        #     data = {
+        #         'status': 400,
+        #         'message': str(e) + ".Something is wrong. Please contact your admin!!",
+        #         'time': str(datetime.datetime.now())
+        #     }
+        #     return make_response(jsonify(data), 200)
         # with open(result_template_checking_file, "rb") as image_file:
         #     image_1_result = str(base64.b64encode(image_file.read()), 'utf-8')
         data = {
             'status': 200,
             'message_template_checking': message_template_checking,
             'message_OCR': '',
-            'message_facial': '',
+            'message_facial': message_facial,
             'message': "Successful",
             # 'image1Result': image_1_result,
             'time': str(datetime.datetime.now())
