@@ -82,9 +82,9 @@ def json_image_post():
         path_uploads = UPLOAD_FOLDER + datetime.datetime.now().strftime("%d.%m.%Y")
         time_now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         create_new_folder(path_uploads)
-        cccd_front_file = '{}/cccd_front_{}.jpg'.format(path_uploads, time_now)
-        cccd_behind_file = '{}/cccd_behind_{}.jpg'.format(path_uploads, time_now)
-        cccd_selfie_file = '{}/cccd_selfie_{}.jpg'.format(path_uploads, time_now)
+        cccd_front_file = '{}/{}_cccd_front.jpg'.format(path_uploads, time_now)
+        cccd_behind_file = '{}/{}_cccd_behind.jpg'.format(path_uploads, time_now)
+        cccd_selfie_file = '{}/{}_cccd_selfie.jpg'.format(path_uploads, time_now)
         try:
             cccd_front_data = base64.b64decode(req_data['image1'])
             cccd_behind_data = base64.b64decode(req_data['image2'])
@@ -120,6 +120,16 @@ def json_image_post():
 # @app.route('/', methods=['GET'])
 # def display():
 #     return render_template('formPartial.html')
+
+@app.route('/get-json/', methods=['GET'])
+def get_json():
+    data = {
+        'method': 'GET',
+        'status': 200,
+        'message': "Successful",
+        'time': str(datetime.datetime.now())
+    }
+    return make_response(jsonify(data), 200)
 
 
 @app.route('/', methods=['GET'])
