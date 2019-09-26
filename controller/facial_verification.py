@@ -190,10 +190,10 @@ class FacialVerification(object):
     def __init__(self, cccd_path, portrait_path):
         self.cccd_image = cv.imread(cccd_path, cv.IMREAD_COLOR)
         self.cccd_image_scale = imutils.resize(self.cccd_image, height=500)
-        show_image(self.cccd_image_scale)
+        # show_image(self.cccd_image_scale)
         self.portrait_image = cv.imread(portrait_path, cv.IMREAD_COLOR)
         self.portrait_scale_image = imutils.resize(self.portrait_image, height=500)
-        show_image(self.portrait_scale_image)
+        # show_image(self.portrait_scale_image)
 
     def processing(self, path_save='result_template_checking.jpg'):
         haar_xml = 'controller/pretrained_model/haarcascade_frontalface_default.xml'
@@ -205,7 +205,7 @@ class FacialVerification(object):
             return False
         rec_images = denote_face(self.cccd_image_scale, faces)
         cropped = crop_face(self.cccd_image_scale, faces, scale_factor=1.3, target_size=(256, 256))
-        show_image(BGR2RGB(cropped))
+        # show_image(BGR2RGB(cropped))
         try:
             faces_portrait = cascade_detector(self.portrait_scale_image, xml=haar_xml, scale_factor=1.1,
                                               min_neighbors=9)
@@ -213,11 +213,11 @@ class FacialVerification(object):
             print('Oops!!!' + str(e))
             return False
         rec_portrait_images = denote_face(self.cccd_image_scale, faces_portrait)
-        show_image(BGR2RGB(rec_portrait_images))
+        # show_image(BGR2RGB(rec_portrait_images))
         cropped_portrait = crop_face(self.portrait_scale_image,
                                      faces_portrait, scale_factor=1.3,
                                      target_size=(256, 256))
-        show_image(BGR2RGB(cropped_portrait))
+        # show_image(BGR2RGB(cropped_portrait))
         # define path to pre-trained model and haar xml
         model_path = 'controller/pretrained_model/facenet-margin-04-final.h5'
 

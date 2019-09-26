@@ -7,7 +7,9 @@ import datetime
 import base64
 import binascii
 from controller.template_checking import TemplateChecking
-from controller.facial_verification import FacialVerification
+from controller.facial_verification import FacialVerification, FaceVerify
+import cv2 as cv
+import imutils
 
 PROJECT_HOME = os.path.dirname(os.path.realpath(__file__))
 
@@ -86,12 +88,15 @@ def json_image_post():
         time_now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         create_new_folder(path_uploads)
         cccd_front_file = '{}/{}_cccd_front.jpg'.format(path_uploads, time_now)
+        cccd_front_file_scale = '{}/{}_cccd_front_scale.jpg'.format(path_uploads, time_now)
         cccd_behind_file = '{}/{}_cccd_behind.jpg'.format(path_uploads, time_now)
-        cccd_selfie_file = '{}/{}_cccd_selfie.jpg'.format(path_uploads, time_now)
+        cccd_behind_file_scale = '{}/{}_cccd_behind_scale.jpg'.format(path_uploads, time_now)
+        cccd_portrait_file = '{}/{}_cccd_portrait.jpg'.format(path_uploads, time_now)
+        cccd_portrait_file_scale = '{}/{}_cccd_portrait_scale.jpg'.format(path_uploads, time_now)
         try:
             cccd_front_data = base64.b64decode(req_data['image1'])
             cccd_behind_data = base64.b64decode(req_data['image2'])
-            cccd_selfie_data = base64.b64decode(req_data['image3'])
+            cccd_portrait_data = base64.b64decode(req_data['image3'])
         except binascii.Error:
             data = {
                 'status': 400,
@@ -105,14 +110,18 @@ def json_image_post():
         with open(cccd_behind_file, 'wb') as f:
             f.write(cccd_behind_data)
             f.close()
-        with open(cccd_selfie_file, 'wb') as f:
-            f.write(cccd_selfie_data)
+        with open(cccd_portrait_file, 'wb') as f:
+            f.write(cccd_portrait_data)
             f.close()
-        # with open("{}/image/cccd/NDMT_CCCD.jpg".format(PROJECT_HOME), "rb") as image_file:
-        #     image_1_result = str(base64.b64encode(image_file.read()), 'utf-8')
-        result_template_checking_file = '{}/{}_result_template_checking.jpg'.format(path_uploads, time_now)
+        cccd_image = cv.imread(cccd_front_file, cv.IMREAD_COLOR)
+        cccd_image_image = imutils.resize(cccd_image, height=500)
+        cv.imwrite(cccd_front_file_scale, cccd_image_image)
+        portrait_image = cv.imread(cccd_portrait_file, cv.IMREAD_COLOR)
+        portrait_scale_image = imutils.resize(portrait_image, height=500)
+        cv.imwrite(cccd_portrait_file_scale, portrait_scale_image)
 
         # Template Checking
+        result_template_checking_file = '{}/{}_result_template_checking.jpg'.format(path_uploads, time_now)
         try:
             template_checking_model = TemplateChecking(cccd_front_file)
             template_checking_model.processing(result_template_checking_file)
@@ -126,41 +135,47 @@ def json_image_post():
             return make_response(jsonify(data), 200)
 
         # Facial Verification
-        # try:
-        cccd_front_file = 'image/cccd/NDMT_CCCD.jpg'
-        cccd_selfie_file = 'image/facial_verification/NPXT_Portrait.jpg'
-        facial_verification = FacialVerification(cccd_front_file, cccd_selfie_file)
-        message_facial = facial_verification.processing()
-        if not message_facial:
+        try:
+            face_model = FaceVerify()
+            img1, img2, message_facial_distance = face_model.get_distance(cccd_front_file_scale,
+                                                                          cccd_portrait_file_scale)
+            if not message_facial_distance:
+                data = {
+                    'status': 400,
+                    'message': "Something in facial verification is wrong. Please contact your admin!!",
+                    'time': str(datetime.datetime.now())
+                }
+                return make_response(jsonify(data), 200)
+        except Exception as e:
             data = {
                 'status': 400,
-                'message': "Something in facial verification is wrong. Please contact your admin!!",
+                'message': str(e) + ".Something is wrong. Please contact your admin!!",
                 'time': str(datetime.datetime.now())
             }
             return make_response(jsonify(data), 200)
-        # except Exception as e:
-        #     data = {
-        #         'status': 400,
-        #         'message': str(e) + ".Something is wrong. Please contact your admin!!",
-        #         'time': str(datetime.datetime.now())
-        #     }
-        #     return make_response(jsonify(data), 200)
         # with open(result_template_checking_file, "rb") as image_file:
         #     image_1_result = str(base64.b64encode(image_file.read()), 'utf-8')
         data = {
             'status': 200,
-            'message_template_checking': message_template_checking,
+            'message_template_checking': str(message_template_checking),
             'message_OCR': '',
-            'message_facial': message_facial,
+            'message_facial': str(message_facial_distance),
             'message': "Successful",
             # 'image1Result': image_1_result,
             'time': str(datetime.datetime.now())
         }
+        print(data)
         return make_response(jsonify(data), 200)
 
 
 @app.route('/get-json/', methods=['GET'])
 def get_json():
+    result_template_checking_file = '/Users/victornguyen/Sites/devc_project/image/facial_verification/NPXT_Portrait.jpg'
+    with open(result_template_checking_file, "rb") as image_file:
+        image_1_result = str(base64.b64encode(image_file.read()), 'utf-8')
+    f = open("{}/json_request.txt".format(PROJECT_HOME), "w")
+    f.write(image_1_result)
+    f.close()
     data = {
         'method': 'GET',
         'status': 200,
@@ -178,4 +193,4 @@ def display_json():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8001)
+    app.run(host='0.0.0.0', port=8002)
