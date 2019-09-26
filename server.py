@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 import datetime
 import base64
 import binascii
+from controller.template_checking import TemplateChecking
 
 PROJECT_HOME = os.path.dirname(os.path.realpath(__file__))
 
@@ -105,21 +106,33 @@ def json_image_post():
         with open(cccd_selfie_file, 'wb') as f:
             f.write(cccd_selfie_data)
             f.close()
-        with open("{}/image/done-it.jpg".format(PROJECT_HOME), "rb") as image_file:
-            image_1_result = str(base64.b64encode(image_file.read()), 'utf-8')
+        # with open("{}/image/cccd/NDMT_CCCD.jpg".format(PROJECT_HOME), "rb") as image_file:
+        #     image_1_result = str(base64.b64encode(image_file.read()), 'utf-8')
+        result_template_checking_file = '{}/{}_result_template_checking.jpg'.format(path_uploads, time_now)
+        try:
+            template_checking_model = TemplateChecking(cccd_front_file)
+            template_checking_model.processing(result_template_checking_file)
+            message_template_checking = '89%'
+        except Exception as e:
+            data = {
+                'status': 400,
+                'message': str(e) + ". Some thing is wrong. Please contact your admin!!",
+                'time': str(datetime.datetime.now())
+            }
+            return make_response(jsonify(data), 200)
+        # with open(result_template_checking_file, "rb") as image_file:
+        #     image_1_result = str(base64.b64encode(image_file.read()), 'utf-8')
         data = {
             'status': 200,
+            'message_template_checking': message_template_checking,
+            'message_OCR': '',
+            'message_facial': '',
             'message': "Successful",
-            'image1Result': image_1_result,
+            # 'image1Result': image_1_result,
             'time': str(datetime.datetime.now())
         }
         return make_response(jsonify(data), 200)
 
-
-#
-# @app.route('/', methods=['GET'])
-# def display():
-#     return render_template('formPartial.html')
 
 @app.route('/get-json/', methods=['GET'])
 def get_json():
