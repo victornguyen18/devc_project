@@ -98,15 +98,19 @@ def json_image_post():
             return make_response(jsonify(data), 200)
         with open(cccd_front_file, 'wb') as f:
             f.write(cccd_front_data)
+            f.close()
         with open(cccd_behind_file, 'wb') as f:
             f.write(cccd_behind_data)
+            f.close()
         with open(cccd_selfie_file, 'wb') as f:
             f.write(cccd_selfie_data)
-        # with open("{}/image/done-it.jpg".format(PROJECT_HOME), "rb") as image_file:
-        #     image_1_result = str(base64.b64encode(image_file.read()))
+            f.close()
+        with open("{}/image/done-it.jpg".format(PROJECT_HOME), "rb") as image_file:
+            image_1_result = str(base64.b64encode(image_file.read()), 'utf-8')
         data = {
             'status': 200,
             'message': "Successful",
+            'image1Result': image_1_result,
             'time': str(datetime.datetime.now())
         }
         return make_response(jsonify(data), 200)
