@@ -5,6 +5,7 @@ import os
 from werkzeug.utils import secure_filename
 import datetime
 import base64
+import binascii
 
 PROJECT_HOME = os.path.dirname(os.path.realpath(__file__))
 
@@ -71,15 +72,41 @@ def json_post():
 def json_image_post():
     if request.method == 'POST':
         req_data = dict(request.get_json())
-        print(req_data['image1'])
-        img_data = base64.b64decode(req_data['image1'])
-        file_name = 'test.jpg';
-        with open(file_name, 'wb') as f:
-            f.write(img_data)
+        if 'image1' not in req_data or 'image2' not in req_data or 'image3' not in req_data:
+            data = {
+                'status': 400,
+                'message': "Please submit 3 picture!!!",
+                'time': str(datetime.datetime.now())
+            }
+            return make_response(jsonify(data), 200)
+        path_uploads = UPLOAD_FOLDER + datetime.datetime.now().strftime("%d.%m.%Y")
+        time_now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        create_new_folder(path_uploads)
+        cccd_front_file = '{}/cccd_front_{}.jpg'.format(path_uploads, time_now)
+        cccd_behind_file = '{}/cccd_behind_{}.jpg'.format(path_uploads, time_now)
+        cccd_selfie_file = '{}/cccd_selfie_{}.jpg'.format(path_uploads, time_now)
+        try:
+            cccd_front_data = base64.b64decode(req_data['image1'])
+            cccd_behind_data = base64.b64decode(req_data['image2'])
+            cccd_selfie_data = base64.b64decode(req_data['image3'])
+        except binascii.Error:
+            data = {
+                'status': 400,
+                'message': "Some thing is wrong. Please contact your admin!!",
+                'time': str(datetime.datetime.now())
+            }
+            return make_response(jsonify(data), 200)
+        with open(cccd_front_file, 'wb') as f:
+            f.write(cccd_front_data)
+        with open(cccd_behind_file, 'wb') as f:
+            f.write(cccd_behind_data)
+        with open(cccd_selfie_file, 'wb') as f:
+            f.write(cccd_selfie_data)
+        # with open("{}/image/done-it.jpg".format(PROJECT_HOME), "rb") as image_file:
+        #     image_1_result = str(base64.b64encode(image_file.read()))
         data = {
-            'method': "POST",
-            'function': "json image post",
-            'message': "successful",
+            'status': 200,
+            'message': "Successful",
             'time': str(datetime.datetime.now())
         }
         return make_response(jsonify(data), 200)
