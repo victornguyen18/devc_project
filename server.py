@@ -127,6 +127,7 @@ def json_image_post():
         try:
             template_checking_model = TemplateChecking(cccd_front_file)
             message_template_checking = template_checking_model.processing(result_template_checking_file)
+            print("Finish Template checking")
         except Exception as e:
             data = {
                 'status': 400,
@@ -140,6 +141,7 @@ def json_image_post():
             face_model = FaceVerify()
             img1, img2, message_facial_distance = face_model.get_distance(cccd_front_file_scale,
                                                                           cccd_portrait_file_scale)
+            print("Finish Facial Verification")
             if not message_facial_distance:
                 data = {
                     'status': 400,
@@ -155,20 +157,20 @@ def json_image_post():
             }
             return make_response(jsonify(data), 200)
 
-        # OCR
+        # # OCR
         message_ocr = 'Initial'
-        try:
-            image_path = "image/cccd/DTN_Shot.jpg"
-            face_model = OCR(image_path)
-            message_ocr = face_model.processing()
-        except Exception as e:
-            message_ocr = 'Developing'
-            # data = {
-            #     'status': 400,
-            #     'message': str(e) + ".Something is wrong. Please contact your admin!!",
-            #     'time': str(datetime.datetime.now())
-            # }
-            # return make_response(jsonify(data), 200)
+        # try:
+        #     image_path = "image/cccd/DTN_Shot.jpg"
+        #     face_model = OCR(image_path)
+        #     message_ocr = face_model.processing()
+        # except Exception as e:
+        #     message_ocr = 'Developing'
+        #     # data = {
+        #     #     'status': 400,
+        #     #     'message': str(e) + ".Something is wrong. Please contact your admin!!",
+        #     #     'time': str(datetime.datetime.now())
+        #     # }
+        #     # return make_response(jsonify(data), 200)
 
         # with open(result_template_checking_file, "rb") as image_file:
         #     image_1_result = str(base64.b64encode(image_file.read()), 'utf-8')
@@ -187,7 +189,7 @@ def json_image_post():
 
 @app.route('/get-json/', methods=['GET'])
 def get_json():
-    result_template_checking_file = '/Users/victornguyen/Sites/devc_project/image/facial_verification/NPXT_Portrait.jpg'
+    result_template_checking_file = '/Users/victornguyen/Sites/devc_project/image/cccd/DTN_Shot.jpg'
     with open(result_template_checking_file, "rb") as image_file:
         image_1_result = str(base64.b64encode(image_file.read()), 'utf-8')
     f = open("{}/json_request.txt".format(PROJECT_HOME), "w")
