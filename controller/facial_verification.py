@@ -9,6 +9,7 @@ import tensorflow as tf
 
 from matplotlib import pyplot as plt
 from keras.models import load_model
+from keras import backend as K
 
 warnings.simplefilter('ignore')
 
@@ -131,6 +132,7 @@ class FaceVerify(object):
         self.path = path
         self.xml = xml
         self.model = None
+        K.clear_session()
 
     def get_distance(self, path1, path2):
         """ get the distance between two images from path1 and path2 """
