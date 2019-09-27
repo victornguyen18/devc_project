@@ -87,9 +87,9 @@ class TemplateChecking(object):
     def __init__(self, path):
         self.cccd_image = cv.imread(path)
         self.cccd_image_scale = imutils.resize(self.cccd_image, height=500)
-        # show_image(self.cccd_image_scale)
+        self.cccd_warped = self.crop_image()
 
-    def processing(self, path_save='result_template_checking.jpg'):
+    def crop_image(self):
         gray = cv.GaussianBlur(self.cccd_image_scale, (3, 3), 3)
         dst = cv.Canny(gray, 50, 100, None, 3)
 
@@ -206,8 +206,10 @@ class TemplateChecking(object):
         warped = four_point_transform(self.cccd_image_scale, corner_arr)
         warped = cv.cvtColor(warped, cv.COLOR_BGR2GRAY)
         # cv_imshow(warped)
+        return warped
 
-        bin_img = warped
+    def processing(self, path_save='result_template_checking.jpg'):
+        bin_img = self.cccd_warped
 
         ratio_y = 3.1 / 8.4
         ratio_x1 = 0.25 / 5.4
@@ -230,11 +232,7 @@ class TemplateChecking(object):
             return True
         else:
             return False
-        # Draw rectangle if find template
-        # for pt in zip(*loc[::-1]):
-        #     cv.rectangle(format_standard, pt, (pt[0] + w, pt[1] + h), (0, 255, 0), 3)
-        #
-        # show_image(format_standard)
+
 
 
 if __name__ == '__main__':

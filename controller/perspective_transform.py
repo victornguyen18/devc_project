@@ -1,13 +1,16 @@
 from matplotlib import pyplot as plt
-from PIL import Image
 import pytesseract
-import argparse
 import cv2 as cv
-import os
 import numpy as np
 import math
 from shutil import copy
 import imutils
+
+
+def show_image(image):
+    plt.imshow(image, cmap='gray')
+    plt.show()
+
 
 # Define a function to split each row (separated above) into 4 questions
 """
@@ -286,11 +289,11 @@ class PerspectiveTransform(object):
         copy(src, dst)
 
     def processing(self):
-        gray = cv.GaussianBlur(self.cccd_image, (3, 3), 3)
+        gray = cv.GaussianBlur(self.cccd_image_scale, (3, 3), 3)
 
         dst = cv.Canny(gray, 50, 100, None, 3)
 
-        # Copy edges to the images that will display the results in BGR
+        print("Copy edges to the images that will display the results in BGR")
         cdst = cv.cvtColor(dst, cv.COLOR_GRAY2BGR)
 
         lines = cv.HoughLines(dst, 1, np.pi / 180, 135, None, 0, 0)
@@ -307,7 +310,7 @@ class PerspectiveTransform(object):
                 pt2 = (int(x0 - 1000 * (-b)), int(y0 - 1000 * (a)))
                 cv.line(cdst, pt1, pt2, (0, 0, 255), 3, cv.LINE_AA)
 
-        # show_image(cdst)
+        show_image(cdst)
         pts = []
 
         for i in range(lines.shape[0]):
@@ -408,7 +411,7 @@ class PerspectiveTransform(object):
         warped = cv.cvtColor(warped, cv.COLOR_BGR2GRAY)
         # show_image(warped)
 
-        # Prepocessing image then apply tesseract
+        print("Prepocessing image then apply tesseract")
 
         thres_img = cv.adaptiveThreshold(warped, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 13, 13)
         # show_image(thres_img)
@@ -478,6 +481,83 @@ class PerspectiveTransform(object):
         # For part 2 just simply apply tesseract provided the image is clear enough
         text = pytesseract.image_to_string(~part_2, lang='vie')
         print(text)
+        return text
+
+    @staticmethod
+    def processing_2(warped):
+
+        # show_image(warped)
+
+        # Prepocessing image then apply tesseract
+        thres_img = cv.adaptiveThreshold(warped, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 13, 13)
+        show_image(thres_img)
+
+        blur = cv.medianBlur(thres_img, 5)
+        show_image(blur)
+
+        sharpened = unsharp_mask(blur, (5, 5), 150, 50, 150)
+        show_image(sharpened)
+
+        # Calculate histogram then group them. Only used for part where most information reside
+        # and have no actual standard format. Ignore this part for now
+
+        # If some information is missing, changing the ratio
+        bin_img = ~sharpened
+
+        ratio_x_1 = 2.7 / 8.6
+        ratio_x_2 = 3.1 / 8.6
+        ratio_y_1 = 1.5 / 5.4
+        ratio_y_2 = 4.9 / 5.4
+
+        ratio_y_3 = 5.05 / 5.4
+
+        part_1 = bin_img[int(bin_img.shape[0] * ratio_y_1):int(bin_img.shape[0] * ratio_y_3),
+                 int(bin_img.shape[1] * ratio_x_1):]
+
+        part_2 = bin_img[int(bin_img.shape[0] * ratio_y_3):,
+                 :int(bin_img.shape[1] * ratio_x_2)]
+
+        show_image(part_1)
+        show_image(part_2)
+
+        # cv2_imshow(~part_2)
+
+        # Calculate row-wise histogram
+        histogram_per_row = calculate_Histogram(~part_1, mode='row')
+
+        # Visualize histogram in row
+        draw_histogram(histogram_per_row, mode='row', figsize=(5, 7))
+
+        # Group histogram of consecutive rows in form of segments
+        content_segment = group_consecutive_hist_into_segments(histogram_per_row, 3)
+
+        # Display regions of interest (ROI) for segments
+        for idx, sect in enumerate(content_segment):
+            # Crop a corresponding region on threshold image
+            image_section = part_1[sect[0]:sect[1], :]
+            show_opencv_image_with_matplotlib(image_section)
+
+        # Group nearby/small segment into big sections
+        # threshold_distance = thres_img.shape[0] * 0.00735
+
+        threshold_distance = sharpened.shape[0] * 0.00735
+        row_section_idx = form_sections_from_segments(content_segment,
+                                                      histogram_per_row,
+                                                      threshold_distance=threshold_distance,
+                                                      threshold_segment_hist=1000)
+
+        # Save regions of interest (ROI) of sections in a list and display them
+        row_section = list()
+        for idx, sect in enumerate(row_section_idx):
+            # Crop a corresponding region on threshold image
+            image_section = part_1[sect[0]:sect[1], :]
+            row_section.append(image_section)
+            show_opencv_image_with_matplotlib(image_section)
+
+        # For part 2 just simply apply tesseract provided the image is clear enough
+        text = pytesseract.image_to_string(~part_2, lang='vie')
+        print(text)
+        return text
 
 
 if __name__ == '__main__':
