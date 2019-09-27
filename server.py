@@ -124,8 +124,7 @@ def json_image_post():
         result_template_checking_file = '{}/{}_result_template_checking.jpg'.format(path_uploads, time_now)
         try:
             template_checking_model = TemplateChecking(cccd_front_file)
-            template_checking_model.processing(result_template_checking_file)
-            message_template_checking = '89%'
+            message_template_checking = template_checking_model.processing(result_template_checking_file)
         except Exception as e:
             data = {
                 'status': 400,

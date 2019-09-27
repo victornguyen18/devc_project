@@ -87,7 +87,7 @@ class TemplateChecking(object):
     def __init__(self, path):
         self.cccd_image = cv.imread(path)
         self.cccd_image_scale = imutils.resize(self.cccd_image, height=500)
-        show_image(self.cccd_image_scale)
+        # show_image(self.cccd_image_scale)
 
     def processing(self, path_save='result_template_checking.jpg'):
         gray = cv.GaussianBlur(self.cccd_image_scale, (3, 3), 3)
@@ -218,17 +218,23 @@ class TemplateChecking(object):
                           ]
         standard_format_cccd_cd = 'image/template_checking/standard_format_CCCd.jpg'
         format_standard = cv.imread(standard_format_cccd_cd, cv.IMREAD_GRAYSCALE)
-        show_image(format_standard)
+        # show_image(format_standard)
 
         w, h = national_symbol.shape[::-1]
-
         res = cv.matchTemplate(format_standard, national_symbol, cv.TM_CCOEFF_NORMED)
-        print(len(res))
-        min_val, max_val, min_loc, max_loc = cv.minMaxLoc(res)
-        top_left = max_loc
-        bottom_right = (top_left[0] + w, top_left[1] + h)
-        cv.rectangle(format_standard, top_left, bottom_right, (125, 125, 125), 2)
-        # cv.imwrite(path_save, format_standard)
+        # result = cv2.matchTemplate(gray_img, template, cv2.TM_CCOEFF_NORMED)
+        loc = np.where(res >= 0.8)
+        print(loc)
+        print(len(loc[0]))
+        if len(loc[0]) > 10:
+            return True
+        else:
+            return False
+        # Draw rectangle if find template
+        # for pt in zip(*loc[::-1]):
+        #     cv.rectangle(format_standard, pt, (pt[0] + w, pt[1] + h), (0, 255, 0), 3)
+        #
+        # show_image(format_standard)
 
 
 if __name__ == '__main__':
