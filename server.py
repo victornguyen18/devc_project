@@ -8,6 +8,7 @@ import base64
 import binascii
 from controller.template_checking import TemplateChecking
 from controller.facial_verification import FacialVerification, FaceVerify
+from controller.perspective_transform import PerspectiveTransform as OCR
 import cv2 as cv
 import imutils
 
@@ -75,6 +76,7 @@ def json_post():
 
 @app.route('/json-image-post/', methods=['POST'])
 def json_image_post():
+    print("Running")
     if request.method == 'POST':
         req_data = dict(request.get_json())
         if 'image1' not in req_data or 'image2' not in req_data or 'image3' not in req_data:
@@ -152,12 +154,28 @@ def json_image_post():
                 'time': str(datetime.datetime.now())
             }
             return make_response(jsonify(data), 200)
+
+        # OCR
+        message_ocr = 'Initial'
+        try:
+            image_path = "image/cccd/DTN_Shot.jpg"
+            face_model = OCR(image_path)
+            message_ocr = face_model.processing()
+        except Exception as e:
+            message_ocr = 'Developing'
+            # data = {
+            #     'status': 400,
+            #     'message': str(e) + ".Something is wrong. Please contact your admin!!",
+            #     'time': str(datetime.datetime.now())
+            # }
+            # return make_response(jsonify(data), 200)
+
         # with open(result_template_checking_file, "rb") as image_file:
         #     image_1_result = str(base64.b64encode(image_file.read()), 'utf-8')
         data = {
             'status': 200,
             'message_template_checking': str(message_template_checking),
-            'message_OCR': '',
+            'message_OCR': str(message_ocr),
             'message_facial': str(message_facial_distance),
             'message': "Successful",
             # 'image1Result': image_1_result,
