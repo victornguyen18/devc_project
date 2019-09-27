@@ -125,8 +125,10 @@ def json_image_post():
         # Template Checking
         result_template_checking_file = '{}/{}_result_template_checking.jpg'.format(path_uploads, time_now)
         try:
+            print("Start Template checking")
             template_checking_model = TemplateChecking(cccd_front_file)
             message_template_checking = template_checking_model.processing(result_template_checking_file)
+            warped_image_front = template_checking_model.cccd_warped
             print("Finish Template checking")
         except Exception as e:
             data = {
@@ -138,6 +140,7 @@ def json_image_post():
 
         # Facial Verification
         try:
+            print("Start Facial Verification")
             face_model = FaceVerify()
             img1, img2, message_facial_distance = face_model.get_distance(cccd_front_file_scale,
                                                                           cccd_portrait_file_scale)
@@ -157,20 +160,19 @@ def json_image_post():
             }
             return make_response(jsonify(data), 200)
 
-        # # OCR
-        message_ocr = 'Initial'
-        # try:
-        #     image_path = "image/cccd/DTN_Shot.jpg"
-        #     face_model = OCR(image_path)
-        #     message_ocr = face_model.processing()
-        # except Exception as e:
-        #     message_ocr = 'Developing'
-        #     # data = {
-        #     #     'status': 400,
-        #     #     'message': str(e) + ".Something is wrong. Please contact your admin!!",
-        #     #     'time': str(datetime.datetime.now())
-        #     # }
-        #     # return make_response(jsonify(data), 200)
+        # OCR
+        try:
+            print("Start OCR")
+            # message_ocr = OCR(cccd_front_file).processing_2(warped_image_front)
+            message_ocr = OCR(cccd_front_file).processing()
+            print("Finish OCR")
+        except Exception as e:
+            data = {
+                'status': 400,
+                'message': str(e) + ".Something is wrong. Please contact your admin!!",
+                'time': str(datetime.datetime.now())
+            }
+            return make_response(jsonify(data), 200)
 
         # with open(result_template_checking_file, "rb") as image_file:
         #     image_1_result = str(base64.b64encode(image_file.read()), 'utf-8')
