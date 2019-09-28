@@ -1,26 +1,32 @@
-from flask import Flask, request, render_template, jsonify, make_response
-import logging
 import os
-from werkzeug.utils import secure_filename
+import logging
+import traceback
 import datetime
 import base64
 import binascii
-from controller.template_checking import TemplateChecking
-from controller.facial_verification import FacialVerification, FaceVerify
-from controller.perspective_transform import PerspectiveTransform as OCR
 import cv2 as cv
 import imutils
 
+from flask import Flask, request, render_template, jsonify, make_response
+from werkzeug.utils import secure_filename
+from controller.template_checking import TemplateChecking
+from controller.facial_verification import FacialVerification, FaceVerify
+from controller.perspective_transform import PerspectiveTransform as OCR
+
 PROJECT_HOME = os.path.dirname(os.path.realpath(__file__))
 UPLOAD_FOLDER = '{}/uploads/'.format(PROJECT_HOME)
-error_handler = logging.FileHandler('{}/logs/errors.log'.format(PROJECT_HOME))
 
 app = Flask('DevC-Project-BrokenHeart', template_folder='{}/templates'.format(PROJECT_HOME))
 app.config.from_envvar('APP_SETTINGS')
-app.logger.addHandler(error_handler)
-app.logger.setLevel(logging.INFO)
-app.config['APPLICATION_ROOT'] = PROJECT_HOME
+app.config['APPLICATION_ROOT'] = PROJECT_HOME + "3123"
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Configure logging
+handler = logging.FileHandler('{}/logs/errors.log'.format(PROJECT_HOME))
+handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter(app.config['LOGGING_FORMAT'])
+handler.setFormatter(formatter)
+app.logger.addHandler(handler)
 
 
 def create_new_folder(local_dir):
@@ -30,34 +36,57 @@ def create_new_folder(local_dir):
     return new_path
 
 
-@app.route('/image-post/', methods=['POST'])
-def api_root():
-    app.logger.info(PROJECT_HOME)
+def error_handling(e, trace_back=True):
+    if trace_back:
+        error_message = traceback.format_exc()
+    else:
+        error_message = str(e)
+    app.logger.error(error_message)
+    data = {
+        'status': 400,
+        'message': "Some thing is wrong. Please contact your admin!!",
+        'time': str(datetime.datetime.now())
+    }
+    return make_response(jsonify(data), 200)
+
+
+@app.route('/', methods=['GET'])
+def display_json():
+    return render_template('homepage.html')
+
+
+@app.route('/decode-image/', methods=['POST'])
+def decode_image():
     if request.method == 'POST' and request.files['image']:
-        app.logger.info(app.config['UPLOAD_FOLDER'])
-        img = request.files['image']
-        img_name = secure_filename(img.filename)
-        create_new_folder(app.config['UPLOAD_FOLDER'])
-        saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
-        app.logger.info("saving {}".format(saved_path))
-        img.save(saved_path)
-        data = {
-            'username': "Thang",
-            'email': "thang181997@gmail.com",
-            'time': str(datetime.datetime.now())
-        }
-        return make_response(jsonify(data), 200)
-        # return send_from_directory(app.config['UPLOAD_FOLDER'], img_name, as_attachment=True)
+        try:
+            img = request.files['image']
+            img_name = secure_filename(img.filename)
+            create_new_folder(app.config['UPLOAD_FOLDER'])
+            saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
+            app.logger.info("saving {}".format(saved_path))
+            img.save(saved_path)
+            with open(saved_path, "rb") as image_file:
+                image_1_result = str(base64.b64encode(image_file.read()), 'utf-8')
+            f = open("{}/image_json.txt".format(PROJECT_HOME), "w")
+            f.write(image_1_result)
+            f.close()
+            return "{}<br>Write image json successful". \
+                format(str(datetime.datetime.now()))
+        except Exception as e:
+            app.logger.error('Unhandled Exception: %s', (e))
+            return "{}<br>{}.<br>Something is wrong. Please contact your admin!!!". \
+                format(str(datetime.datetime.now()), str(e))
     else:
         return "Where is the image?"
 
 
 @app.route('/json-image-post/', methods=['POST'])
 def json_image_post():
-    print("Running")
+    logging.info("Request image is running")
     if request.method == 'POST':
         req_data = dict(request.get_json())
         if 'image1' not in req_data or 'image2' not in req_data or 'image3' not in req_data:
+            app.logger.error('Not submit 3 picture!!!')
             data = {
                 'status': 400,
                 'message': "Please submit 3 picture!!!",
@@ -78,7 +107,8 @@ def json_image_post():
             cccd_front_data = base64.b64decode(req_data['image1'])
             cccd_behind_data = base64.b64decode(req_data['image2'])
             cccd_portrait_data = base64.b64decode(req_data['image3'])
-        except binascii.Error:
+        except Exception as e:
+            app.logger.error('Unhandled Exception: %s', (e))
             data = {
                 'status': 400,
                 'message': "Some thing is wrong. Please contact your admin!!",
@@ -104,12 +134,13 @@ def json_image_post():
         # Template Checking
         result_template_checking_file = '{}/{}_result_template_checking.jpg'.format(path_uploads, time_now)
         try:
-            print("Start Template checking")
+            logging.info("Start Template checking")
             template_checking_model = TemplateChecking(cccd_front_file)
             message_template_checking = template_checking_model.processing(result_template_checking_file)
             warped_image_front = template_checking_model.cccd_warped
-            print("Finish Template checking")
+            logging.info("Finish Template checking")
         except Exception as e:
+            app.logger.error('Unhandled Exception: %s', (e))
             data = {
                 'status': 400,
                 'message': str(e) + ".Something is wrong. Please contact your admin!!",
@@ -119,11 +150,11 @@ def json_image_post():
 
         # Facial Verification
         try:
-            print("Start Facial Verification")
+            logging.info("Start Facial Verification")
             face_model = FaceVerify()
             img1, img2, message_facial_distance = face_model.get_distance(cccd_front_file_scale,
                                                                           cccd_portrait_file_scale)
-            print("Finish Facial Verification")
+            logging.info("Finish Facial Verification")
             if not message_facial_distance:
                 data = {
                     'status': 400,
@@ -132,25 +163,22 @@ def json_image_post():
                 }
                 return make_response(jsonify(data), 200)
         except Exception as e:
-            data = {
-                'status': 400,
-                'message': str(e) + ".Something is wrong. Please contact your admin!!",
-                'time': str(datetime.datetime.now())
-            }
-            return make_response(jsonify(data), 200)
+            error_handling(e)
 
         # OCR
         try:
-            print("Start OCR")
+            logging.info("Start OCR")
             message_ocr = OCR(cccd_front_file).processing()
-            print("Finish OCR")
+            logging.info("Finish OCR")
         except Exception as e:
-            data = {
-                'status': 400,
-                'message': str(e) + ".Something is wrong. Please contact your admin!!",
-                'time': str(datetime.datetime.now())
-            }
-            return make_response(jsonify(data), 200)
+            return error_handling(e)
+            # app.logger.error('Unhandled Exception: %s', (e))
+            # data = {
+            #     'status': 400,
+            #     'message': str(e) + ".Something is wrong. Please contact your admin!!",
+            #     'time': str(datetime.datetime.now())
+            # }
+            # return make_response(jsonify(data), 200)
 
         # with open(result_template_checking_file, "rb") as image_file:
         #     image_1_result = str(base64.b64encode(image_file.read()), 'utf-8')
@@ -163,37 +191,8 @@ def json_image_post():
             # 'image1Result': image_1_result,
             'time': str(datetime.datetime.now())
         }
-        print(data)
+        logging.info(data)
         return make_response(jsonify(data), 200)
-
-
-@app.route('/get-image-json/', methods=['POST'])
-def get_image_json():
-    if request.method == 'POST' and request.files['image']:
-        try:
-            img = request.files['image']
-            img_name = secure_filename(img.filename)
-            create_new_folder(app.config['UPLOAD_FOLDER'])
-            saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
-            app.logger.info("saving {}".format(saved_path))
-            img.save(saved_path)
-            with open(saved_path, "rb") as image_file:
-                image_1_result = str(base64.b64encode(image_file.read()), 'utf-8')
-            f = open("{}/image_json.txt".format(PROJECT_HOME), "w")
-            f.write(image_1_result)
-            f.close()
-            return "{}<br>Write image json successful". \
-                format(str(datetime.datetime.now()))
-        except Exception as e:
-            return "{}<br>{}.<br>Something is wrong. Please contact your admin!!!". \
-                format(str(datetime.datetime.now()), str(e))
-    else:
-        return "Where is the image?"
-
-
-@app.route('/', methods=['GET'])
-def display_json():
-    return render_template('homepage.html')
 
 
 if __name__ == '__main__':
