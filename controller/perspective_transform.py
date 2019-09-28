@@ -1,10 +1,12 @@
-from matplotlib import pyplot as plt
 import pytesseract
 import cv2 as cv
 import numpy as np
 import math
 from shutil import copy
 import imutils
+
+from matplotlib import pyplot as plt
+from flask import current_app
 
 
 def show_image(image):
@@ -284,8 +286,7 @@ class PerspectiveTransform(object):
         self.cccd_image = cv.imread(path)
         self.cccd_image_scale = imutils.resize(self.cccd_image, height=500)
         src = 'controller/pretrained_model/vie.traineddata'
-        dst = '/usr/share/tesseract/tessdata'
-        # dst = '/usr/local/Cellar/tesseract/4.0.0_1/share/tessdata/'
+        dst = current_app.config["TRAIN_TESSERACT"]
         copy(src, dst)
 
     def processing(self):
