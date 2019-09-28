@@ -3,7 +3,6 @@ import logging
 import traceback
 import datetime
 import base64
-import binascii
 import cv2 as cv
 import imutils
 
@@ -12,6 +11,7 @@ from werkzeug.utils import secure_filename
 from controller.template_checking import TemplateChecking
 from controller.facial_verification import FacialVerification, FaceVerify
 from controller.perspective_transform import PerspectiveTransform as OCR
+from controller.preprocessing_image import PreprocesingImage
 
 PROJECT_HOME = os.path.dirname(os.path.realpath(__file__))
 UPLOAD_FOLDER = '{}/uploads/'.format(PROJECT_HOME)
@@ -24,7 +24,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Configure logging
 handler = logging.FileHandler('{}/logs/errors.log'.format(PROJECT_HOME))
 handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter(app.config['LOGGING_FORMAT'])
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 app.logger.addHandler(handler)
 
@@ -100,15 +100,15 @@ def json_image_post():
 
         cccd_front_file = '{}/{}_cccd_front.jpg'.format(path_uploads, time_now)
         cccd_front_file_scale = '{}/{}_cccd_front_scale.jpg'.format(path_uploads, time_now)
-        cccd_behind_file = '{}/{}_cccd_behind.jpg'.format(path_uploads, time_now)
-        cccd_behind_file_scale = '{}/{}_cccd_behind_scale.jpg'.format(path_uploads, time_now)
+        # cccd_behind_file = '{}/{}_cccd_behind.jpg'.format(path_uploads, time_now)
+        # cccd_behind_file_scale = '{}/{}_cccd_behind_scale.jpg'.format(path_uploads, time_now)
         cccd_portrait_file = '{}/{}_cccd_portrait.jpg'.format(path_uploads, time_now)
         cccd_portrait_file_scale = '{}/{}_cccd_portrait_scale.jpg'.format(path_uploads, time_now)
 
         # Decode image from base 64
         try:
             cccd_front_data = base64.b64decode(req_data['image1'])
-            cccd_behind_data = base64.b64decode(req_data['image2'])
+            # cccd_behind_data = base64.b64decode(req_data['image2'])
             cccd_portrait_data = base64.b64decode(req_data['image3'])
         except Exception as e:
             return error_handling(e, True)
@@ -117,20 +117,15 @@ def json_image_post():
         with open(cccd_front_file, 'wb') as f:
             f.write(cccd_front_data)
             f.close()
-        with open(cccd_behind_file, 'wb') as f:
-            f.write(cccd_behind_data)
-            f.close()
+        # with open(cccd_behind_file, 'wb') as f:
+        #     f.write(cccd_behind_data)
+        #     f.close()
         with open(cccd_portrait_file, 'wb') as f:
             f.write(cccd_portrait_data)
             f.close()
-
         # Resize image
-        cccd_image = cv.imread(cccd_front_file, cv.IMREAD_COLOR)
-        cccd_image_image = imutils.resize(cccd_image, height=500)
-        cv.imwrite(cccd_front_file_scale, cccd_image_image)
-        portrait_image = cv.imread(cccd_portrait_file, cv.IMREAD_COLOR)
-        portrait_scale_image = imutils.resize(portrait_image, height=500)
-        cv.imwrite(cccd_portrait_file_scale, portrait_scale_image)
+        PreprocesingImage.scale_image(cccd_front_file, 500, cccd_front_file_scale)
+        PreprocesingImage.scale_image(cccd_portrait_file, 500, cccd_portrait_file_scale)
 
         # Template Checking
         result_template_checking_file = '{}/{}_result_template_checking.jpg'.format(path_uploads, time_now)
