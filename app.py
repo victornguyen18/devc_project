@@ -44,7 +44,7 @@ def error_handling(e, trace_back=True):
     app.logger.error(error_message)
     data = {
         'status': 400,
-        'message': "Some thing is wrong. Please contact your admin!!",
+        'message': "Some thing is wrong. Please contact your admin!! --- [{}]".format(str(e)),
         'time': str(datetime.datetime.now())
     }
     return make_response(jsonify(data), 200)
@@ -73,7 +73,7 @@ def decode_image():
             return "{}<br>Write image json successful". \
                 format(str(datetime.datetime.now()))
         except Exception as e:
-            app.logger.error('Unhandled Exception: %s', (e))
+            app.logger.error('Unhandled Exception: %s', str(e))
             return "{}<br>{}.<br>Something is wrong. Please contact your admin!!!". \
                 format(str(datetime.datetime.now()), str(e))
     else:
@@ -86,13 +86,14 @@ def json_image_post():
     if request.method == 'POST':
         req_data = dict(request.get_json())
         if 'image1' not in req_data or 'image2' not in req_data or 'image3' not in req_data:
-            app.logger.error('Not submit 3 picture!!!')
             data = {
                 'status': 400,
                 'message': "Please submit 3 picture!!!",
                 'time': str(datetime.datetime.now())
             }
             return make_response(jsonify(data), 200)
+
+        # Location for save image
         path_uploads = UPLOAD_FOLDER + datetime.datetime.now().strftime("%d.%m.%Y")
         time_now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         create_new_folder(path_uploads)
@@ -103,18 +104,16 @@ def json_image_post():
         cccd_behind_file_scale = '{}/{}_cccd_behind_scale.jpg'.format(path_uploads, time_now)
         cccd_portrait_file = '{}/{}_cccd_portrait.jpg'.format(path_uploads, time_now)
         cccd_portrait_file_scale = '{}/{}_cccd_portrait_scale.jpg'.format(path_uploads, time_now)
+
+        # Decode image from base 64
         try:
             cccd_front_data = base64.b64decode(req_data['image1'])
             cccd_behind_data = base64.b64decode(req_data['image2'])
             cccd_portrait_data = base64.b64decode(req_data['image3'])
         except Exception as e:
-            app.logger.error('Unhandled Exception: %s', (e))
-            data = {
-                'status': 400,
-                'message': "Some thing is wrong. Please contact your admin!!",
-                'time': str(datetime.datetime.now())
-            }
-            return make_response(jsonify(data), 200)
+            return error_handling(e, True)
+
+        # Save image after decode from base 64
         with open(cccd_front_file, 'wb') as f:
             f.write(cccd_front_data)
             f.close()
@@ -124,6 +123,8 @@ def json_image_post():
         with open(cccd_portrait_file, 'wb') as f:
             f.write(cccd_portrait_data)
             f.close()
+
+        # Resize image
         cccd_image = cv.imread(cccd_front_file, cv.IMREAD_COLOR)
         cccd_image_image = imutils.resize(cccd_image, height=500)
         cv.imwrite(cccd_front_file_scale, cccd_image_image)
@@ -140,13 +141,7 @@ def json_image_post():
             warped_image_front = template_checking_model.cccd_warped
             logging.info("Finish Template checking")
         except Exception as e:
-            app.logger.error('Unhandled Exception: %s', (e))
-            data = {
-                'status': 400,
-                'message': str(e) + ".Something is wrong. Please contact your admin!!",
-                'time': str(datetime.datetime.now())
-            }
-            return make_response(jsonify(data), 200)
+            return error_handling(e, True)
 
         # Facial Verification
         try:
@@ -156,14 +151,9 @@ def json_image_post():
                                                                           cccd_portrait_file_scale)
             logging.info("Finish Facial Verification")
             if not message_facial_distance:
-                data = {
-                    'status': 400,
-                    'message': "Something in facial verification is wrong. Please contact your admin!!",
-                    'time': str(datetime.datetime.now())
-                }
-                return make_response(jsonify(data), 200)
+                return error_handling("In facial verification")
         except Exception as e:
-            error_handling(e)
+            return error_handling(e, True)
 
         # OCR
         try:
@@ -171,14 +161,7 @@ def json_image_post():
             message_ocr = OCR(cccd_front_file).processing()
             logging.info("Finish OCR")
         except Exception as e:
-            return error_handling(e)
-            # app.logger.error('Unhandled Exception: %s', (e))
-            # data = {
-            #     'status': 400,
-            #     'message': str(e) + ".Something is wrong. Please contact your admin!!",
-            #     'time': str(datetime.datetime.now())
-            # }
-            # return make_response(jsonify(data), 200)
+            return error_handling(e, True)
 
         # with open(result_template_checking_file, "rb") as image_file:
         #     image_1_result = str(base64.b64encode(image_file.read()), 'utf-8')
