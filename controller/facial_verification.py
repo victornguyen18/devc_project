@@ -229,7 +229,7 @@ class FacialVerification(object):
         cv.imwrite('image/results/portrait_scale.jpg', self.portrait_scale_image)
         img1, img2, distance = face_model.get_distance('image/results/scale_cccd.jpg',
                                                        'image/results/portrait_scale.jpg')
-        show_image(img1)
-        show_image(img2)
+        # show_image(img1)
+        # show_image(img2)
         print(distance)
         return distance

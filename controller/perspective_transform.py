@@ -311,7 +311,7 @@ class PerspectiveTransform(object):
                 pt2 = (int(x0 - 1000 * (-b)), int(y0 - 1000 * (a)))
                 cv.line(cdst, pt1, pt2, (0, 0, 255), 3, cv.LINE_AA)
 
-        show_image(cdst)
+        # show_image(cdst)
         pts = []
 
         for i in range(lines.shape[0]):
@@ -491,13 +491,13 @@ class PerspectiveTransform(object):
 
         # Prepocessing image then apply tesseract
         thres_img = cv.adaptiveThreshold(warped, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 13, 13)
-        show_image(thres_img)
+        #show_image(thres_img)
 
         blur = cv.medianBlur(thres_img, 5)
-        show_image(blur)
+        # show_image(blur)
 
         sharpened = unsharp_mask(blur, (5, 5), 150, 50, 150)
-        show_image(sharpened)
+        # show_image(sharpened)
 
         # Calculate histogram then group them. Only used for part where most information reside
         # and have no actual standard format. Ignore this part for now
@@ -518,8 +518,8 @@ class PerspectiveTransform(object):
         part_2 = bin_img[int(bin_img.shape[0] * ratio_y_3):,
                  :int(bin_img.shape[1] * ratio_x_2)]
 
-        show_image(part_1)
-        show_image(part_2)
+        #show_image(part_1)
+        #show_image(part_2)
 
         # cv2_imshow(~part_2)
 
