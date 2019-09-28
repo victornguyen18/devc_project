@@ -13,7 +13,7 @@ import imutils
 
 PROJECT_HOME = os.path.dirname(os.path.realpath(__file__))
 UPLOAD_FOLDER = '{}/uploads/'.format(PROJECT_HOME)
-error_handler = logging.FileHandler('{}/logs/error.log'.format(PROJECT_HOME))
+error_handler = logging.FileHandler('{}/logs/errors.log'.format(PROJECT_HOME))
 
 app = Flask('DevC-Project-BrokenHeart', template_folder='{}/templates'.format(PROJECT_HOME))
 app.config.from_envvar('APP_SETTINGS')
@@ -50,27 +50,6 @@ def api_root():
         # return send_from_directory(app.config['UPLOAD_FOLDER'], img_name, as_attachment=True)
     else:
         return "Where is the image?"
-
-
-@app.route('/json-post/', methods=['POST'])
-def json_post():
-    app.logger.info(PROJECT_HOME)
-    if request.method == 'POST':
-        req_data = request.get_json()
-        print(req_data)
-        # f = open("{}/json_request.txt".format(PROJECT_HOME), "a+")
-        f = open("{}/json_request.txt".format(PROJECT_HOME), "w")
-        f.writelines(str(datetime.datetime.now()))
-        f.writelines(str(req_data))
-        f.writelines("\n=========================\n")
-        f.close()
-        data = {
-            'method': "POST",
-            'function': "json post",
-            'message': "successful",
-            'time': str(datetime.datetime.now())
-        }
-        return make_response(jsonify(data), 200)
 
 
 @app.route('/json-image-post/', methods=['POST'])
@@ -188,21 +167,28 @@ def json_image_post():
         return make_response(jsonify(data), 200)
 
 
-@app.route('/get-json/', methods=['GET'])
-def get_json():
-    result_template_checking_file = 'image/cccd/DTN_Shot.jpg'
-    with open(result_template_checking_file, "rb") as image_file:
-        image_1_result = str(base64.b64encode(image_file.read()), 'utf-8')
-    f = open("{}/json_request.txt".format(PROJECT_HOME), "w")
-    f.write(image_1_result)
-    f.close()
-    data = {
-        'method': 'GET',
-        'status': 200,
-        'message': "Successful",
-        'time': str(datetime.datetime.now())
-    }
-    return make_response(jsonify(data), 200)
+@app.route('/get-image-json/', methods=['POST'])
+def get_image_json():
+    if request.method == 'POST' and request.files['image']:
+        try:
+            img = request.files['image']
+            img_name = secure_filename(img.filename)
+            create_new_folder(app.config['UPLOAD_FOLDER'])
+            saved_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
+            app.logger.info("saving {}".format(saved_path))
+            img.save(saved_path)
+            with open(saved_path, "rb") as image_file:
+                image_1_result = str(base64.b64encode(image_file.read()), 'utf-8')
+            f = open("{}/image_json.txt".format(PROJECT_HOME), "w")
+            f.write(image_1_result)
+            f.close()
+            return "{}<br>Write image json successful". \
+                format(str(datetime.datetime.now()))
+        except Exception as e:
+            return "{}<br>{}.<br>Something is wrong. Please contact your admin!!!". \
+                format(str(datetime.datetime.now()), str(e))
+    else:
+        return "Where is the image?"
 
 
 @app.route('/', methods=['GET'])
