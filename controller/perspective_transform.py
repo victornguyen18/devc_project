@@ -485,7 +485,7 @@ class PerspectiveTransform(object):
         return text
 
     @staticmethod
-    def processing_2(warped):
+    def processing_without_preprocessing_image(warped):
 
         # show_image(warped)
 

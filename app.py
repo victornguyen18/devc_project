@@ -3,8 +3,6 @@ import logging
 import traceback
 import datetime
 import base64
-import cv2 as cv
-import imutils
 
 from flask import Flask, request, render_template, jsonify, make_response
 from werkzeug.utils import secure_filename
@@ -123,9 +121,11 @@ def json_image_post():
         with open(cccd_portrait_file, 'wb') as f:
             f.write(cccd_portrait_data)
             f.close()
+
         # Resize image
-        PreprocesingImage.scale_image(cccd_front_file, 500, cccd_front_file_scale)
-        PreprocesingImage.scale_image(cccd_portrait_file, 500, cccd_portrait_file_scale)
+        PreprocesingImage.scale_image_with_path(cccd_portrait_file, 500, cccd_portrait_file_scale)
+        warped_image = PreprocesingImage.crop_card(cccd_front_file, 500)
+        PreprocesingImage.scale_image_wit_image(warped_image, 500, cccd_front_file_scale)
 
         # Template Checking
         result_template_checking_file = '{}/{}_result_template_checking.jpg'.format(path_uploads, time_now)
@@ -133,7 +133,6 @@ def json_image_post():
             logging.info("Start Template checking")
             template_checking_model = TemplateChecking(cccd_front_file)
             message_template_checking = template_checking_model.processing(result_template_checking_file)
-            warped_image_front = template_checking_model.cccd_warped
             logging.info("Finish Template checking")
         except Exception as e:
             return error_handling(e, True)
@@ -153,7 +152,7 @@ def json_image_post():
         # OCR
         try:
             logging.info("Start OCR")
-            message_ocr = OCR(cccd_front_file).processing()
+            message_ocr = OCR(cccd_front_file).processing_without_preprocessing_image(warped=warped_image)
             logging.info("Finish OCR")
         except Exception as e:
             return error_handling(e, True)
