@@ -233,6 +233,31 @@ class TemplateChecking(object):
         else:
             return False
 
+    @staticmethod
+    def processing_with_image(image):
+        bin_img = image
+
+        ratio_y = 3.1 / 8.4
+        ratio_x1 = 0.25 / 5.4
+        ratio_x2 = 1.6 / 5.4
+
+        national_symbol = bin_img[:int(bin_img.shape[0] * ratio_y),
+                          int(bin_img.shape[1] * ratio_x1):int(bin_img.shape[1] * ratio_x2)
+                          ]
+        standard_format_cccd_cd = 'image/template_checking/standard_format_CCCd.jpg'
+        format_standard = cv.imread(standard_format_cccd_cd, cv.IMREAD_GRAYSCALE)
+        # show_image(format_standard)
+
+        w, h = national_symbol.shape[::-1]
+        res = cv.matchTemplate(format_standard, national_symbol, cv.TM_CCOEFF_NORMED)
+        # result = cv2.matchTemplate(gray_img, template, cv2.TM_CCOEFF_NORMED)
+        loc = np.where(res >= 0.8)
+        print(loc)
+        print(len(loc[0]))
+        if len(loc[0]) > 10:
+            return True
+        else:
+            return False
 
 
 if __name__ == '__main__':

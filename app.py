@@ -7,8 +7,8 @@ import base64
 from flask import Flask, request, render_template, jsonify, make_response
 from werkzeug.utils import secure_filename
 from controller.template_checking import TemplateChecking
-from controller.facial_verification import FacialVerification, FaceVerify
-from controller.perspective_transform import PerspectiveTransform as OCR
+from controller.facial_verification import FaceVerify
+from controller.perspective_transform import PerspectiveTransform
 from controller.preprocessing_image import PreprocesingImage
 
 PROJECT_HOME = os.path.dirname(os.path.realpath(__file__))
@@ -125,14 +125,14 @@ def json_image_post():
         # Resize image
         PreprocesingImage.scale_image_with_path(cccd_portrait_file, 500, cccd_portrait_file_scale)
         warped_image = PreprocesingImage.crop_card(cccd_front_file, 500)
-        PreprocesingImage.scale_image_wit_image(warped_image, 500, cccd_front_file_scale)
+        image_cccd_front = PreprocesingImage.scale_image_wit_image(warped_image, 500, cccd_front_file_scale)
 
         # Template Checking
-        result_template_checking_file = '{}/{}_result_template_checking.jpg'.format(path_uploads, time_now)
+        # result_template_checking_file = '{}/{}_result_template_checking.jpg'.format(path_uploads, time_now)
         try:
             logging.info("Start Template checking")
-            template_checking_model = TemplateChecking(cccd_front_file)
-            message_template_checking = template_checking_model.processing(result_template_checking_file)
+            # template_checking_model = TemplateChecking(cccd_front_file)
+            message_template_checking = TemplateChecking.processing_with_image(image_cccd_front)
             logging.info("Finish Template checking")
         except Exception as e:
             return error_handling(e, True)
@@ -152,7 +152,8 @@ def json_image_post():
         # OCR
         try:
             logging.info("Start OCR")
-            message_ocr = OCR(cccd_front_file).processing_without_preprocessing_image(warped=warped_image)
+            message_ocr = PerspectiveTransform(cccd_front_file). \
+                processing_without_preprocessing_image(warped=warped_image)
             logging.info("Finish OCR")
         except Exception as e:
             return error_handling(e, True)
