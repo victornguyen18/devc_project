@@ -161,24 +161,26 @@ def json_image_post():
         # except Exception as e:
         #     return error_handling(e, True)
         #
-        with open("uploads/2019-09-30_00-47-05_cccd_front_scale.jpg", "rb") as image_file:
-            # image_result = "data:image/jpeg;base64," + str(base64.b64encode(image_file.read()), 'utf-8')
-            image_result = str(base64.b64encode(image_file.read()), 'utf-8')
-            image_file.close()
+        # with open("uploads/done-it.jpg", "rb") as image_file:
+        #     image_result = "data:image/jpeg;base64," + str(base64.b64encode(image_file.read()), 'utf-8')
+        #     image_result = str(base64.b64encode(image_file.read()), 'utf-8')
+        #     image_file.close()
 
         message_template_checking = "Testing"
         message_ocr = "Testing"
         message_facial_distance = "Testing"
 
+        image_file = open("uploads/done-it.jpg", "rb")
         data = {
             'status': 200,
             'message_template_checking': str(message_template_checking),
             'message_OCR': str(message_ocr),
             'message_facial': str(message_facial_distance),
             'message': "Successful",
-            'image_result': image_result,
+            'image_result': str(base64.b64encode(image_file.read()), 'utf-8'),
             'time': str(datetime.datetime.now())
         }
+        image_file.close()
         logging.info(data)
         return make_response(jsonify(data), 200)
 
