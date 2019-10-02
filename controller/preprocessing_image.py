@@ -105,12 +105,16 @@ class PreprocesingImage(object):
         return image_resize
 
     @staticmethod
-    def scale_image_wit_image(image, height, save_path=[]):
+    def scale_image_with_image(image, height, save_path=[]):
         image_resize = imutils.resize(image, height=height)
         for path in save_path:
             # if save_path is not None:
             cv.imwrite(path, image_resize)
         return image_resize
+
+    @staticmethod
+    def write_image(image, path):
+        cv.imwrite(path, image)
 
     @staticmethod
     def crop_card(image_path, height, save_path=None):
@@ -250,7 +254,7 @@ class PreprocesingImage(object):
         corner_arr = np.asarray(pts_corner, dtype="float32")
         # warped = four_point_transform(image_resize, corner_arr)
         warped = four_point_transform(orig_image, corner_arr * ratio)
-        warped = cv.cvtColor(warped, cv.COLOR_BGR2GRAY)
+        warped = cv.cvtColor(warped, cv.COLOR_BGR2RGB)
         if save_path is not None:
             cv.imwrite(save_path, warped)
         return warped

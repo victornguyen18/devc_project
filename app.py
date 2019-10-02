@@ -136,8 +136,8 @@ def json_image_post():
         try:
             PreprocesingImage.scale_image_with_path(cccd_portrait_file, 500, cccd_portrait_file_scale)
             warped_image = PreprocesingImage.crop_card(cccd_front_file, 500)
-            image_cccd_front = PreprocesingImage.scale_image_wit_image(warped_image, 500,
-                                                                       [cccd_front_file_scale, file_save_path])
+            image_cccd_front = PreprocesingImage.scale_image_with_image(warped_image, 500,
+                                                                        [cccd_front_file_scale])
         except Exception as e:
             return error_handling(e, True)
 
@@ -146,37 +146,39 @@ def json_image_post():
         try:
             logging.info("Start Template checking")
             # template_checking_model = TemplateChecking(cccd_front_file)
-            message_template_checking = TemplateChecking.processing_with_image(image_cccd_front)
+            message_template_checking, image_cccd_front_result = TemplateChecking.processing_with_image(
+                image_cccd_front, True)
+            PreprocesingImage.write_image(image_cccd_front_result, file_save_path)
             logging.info("Finish Template checking")
         except Exception as e:
             return error_handling(e, True)
 
-        # Facial Verification
-        try:
-            logging.info("Start Facial Verification")
-            face_model = FaceVerify()
-            img1, img2, message_facial_distance = face_model.get_distance(cccd_front_file_scale,
-                                                                          cccd_portrait_file_scale)
-            logging.info("Finish Facial Verification")
-            if not message_facial_distance:
-                return error_handling("In facial verification")
-        except Exception as e:
-            return error_handling(e, True)
-
-        # OCR
-        try:
-            logging.info("Start OCR")
-            message_ocr = PerspectiveTransform(cccd_front_file). \
-                processing_without_preprocessing_image(warped=warped_image)
-            logging.info("Finish OCR")
-        except Exception as e:
-            return error_handling(e, True)
+        # # Facial Verification
+        # try:
+        #     logging.info("Start Facial Verification")
+        #     face_model = FaceVerify()
+        #     img1, img2, message_facial_distance = face_model.get_distance(cccd_front_file_scale,
+        #                                                                   cccd_portrait_file_scale)
+        #     logging.info("Finish Facial Verification")
+        #     if not message_facial_distance:
+        #         return error_handling("In facial verification")
+        # except Exception as e:
+        #     return error_handling(e, True)
+        #
+        # # OCR
+        # try:
+        #     logging.info("Start OCR")
+        #     message_ocr = PerspectiveTransform(cccd_front_file). \
+        #         processing_without_preprocessing_image(warped_image, True)
+        #     logging.info("Finish OCR")
+        # except Exception as e:
+        #     return error_handling(e, True)
 
         data = {
             'status': 200,
             'message_template_checking': str(message_template_checking),
-            'message_OCR': str(message_ocr),
-            'message_facial': str(message_facial_distance),
+            # 'message_OCR': str(message_ocr),
+            # 'message_facial': str(message_facial_distance),
             'message': "Successful",
             'image_result': "{}/static/{}/{}_result.jpg".format(app.config['APP_URL'], date_now, time_now),
             'time': str(datetime.datetime.now())

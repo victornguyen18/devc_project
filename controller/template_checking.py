@@ -234,8 +234,11 @@ class TemplateChecking(object):
             return False
 
     @staticmethod
-    def processing_with_image(image):
-        bin_img = image
+    def processing_with_image(image, color=False):
+        if not color:
+            bin_img = image
+        else:
+            bin_img = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
 
         ratio_y = 3.1 / 8.4
         ratio_x1 = 0.25 / 5.4
@@ -244,6 +247,8 @@ class TemplateChecking(object):
         national_symbol = bin_img[:int(bin_img.shape[0] * ratio_y),
                           int(bin_img.shape[1] * ratio_x1):int(bin_img.shape[1] * ratio_x2)
                           ]
+        show_image(national_symbol)
+
         standard_format_cccd_cd = 'image/template_checking/standard_format_CCCd.jpg'
         format_standard = cv.imread(standard_format_cccd_cd, cv.IMREAD_GRAYSCALE)
         # show_image(format_standard)
@@ -251,13 +256,16 @@ class TemplateChecking(object):
         w, h = national_symbol.shape[::-1]
         res = cv.matchTemplate(format_standard, national_symbol, cv.TM_CCOEFF_NORMED)
         # result = cv2.matchTemplate(gray_img, template, cv2.TM_CCOEFF_NORMED)
-        loc = np.where(res >= 0.8)
+        loc = np.where(res >= 0.85)
         print(loc)
         print(len(loc[0]))
-        if len(loc[0]) > 10:
-            return True
+        if len(loc[0]) > 20:
+            result_image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+            return True, result_image
         else:
-            return False
+            result_image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+            cv.rectangle(result_image, (15, 5), (w + 15, h), (0, 0, 255), 2)
+            return False, result_image
 
 
 if __name__ == '__main__':

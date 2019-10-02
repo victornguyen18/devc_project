@@ -485,13 +485,17 @@ class PerspectiveTransform(object):
         return text
 
     @staticmethod
-    def processing_without_preprocessing_image(warped):
+    def processing_without_preprocessing_image(image, color=False):
+        if not color:
+            warped = image
+        else:
+            warped = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
 
         # show_image(warped)
 
         # Prepocessing image then apply tesseract
         thres_img = cv.adaptiveThreshold(warped, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 13, 13)
-        #show_image(thres_img)
+        # show_image(thres_img)
 
         blur = cv.medianBlur(thres_img, 5)
         # show_image(blur)
@@ -518,8 +522,8 @@ class PerspectiveTransform(object):
         part_2 = bin_img[int(bin_img.shape[0] * ratio_y_3):,
                  :int(bin_img.shape[1] * ratio_x_2)]
 
-        #show_image(part_1)
-        #show_image(part_2)
+        # show_image(part_1)
+        # show_image(part_2)
 
         # cv2_imshow(~part_2)
 
