@@ -14,7 +14,10 @@ from controller.preprocessing_image import PreprocesingImage
 PROJECT_HOME = os.path.dirname(os.path.realpath(__file__))
 UPLOAD_FOLDER = '{}/uploads/'.format(PROJECT_HOME)
 
-app = Flask('DevC-Project-BrokenHeart', template_folder='{}/templates'.format(PROJECT_HOME))
+app = Flask('DevC-Project-BrokenHeart',
+            template_folder='{}/templates'.format(PROJECT_HOME),
+            static_folder='{}/static'.format(PROJECT_HOME),
+            static_url_path='/static')
 app.config.from_envvar('APP_SETTINGS')
 app.config['APPLICATION_ROOT'] = PROJECT_HOME + "3123"
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
