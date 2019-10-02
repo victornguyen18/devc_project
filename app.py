@@ -82,84 +82,89 @@ def decode_image():
 def json_image_post():
     logging.info("Request image is running")
     if request.method == 'POST':
-        req_data = dict(request.get_json())
-        if 'image1' not in req_data or 'image2' not in req_data or 'image3' not in req_data:
-            data = {
-                'status': 400,
-                'message': "Please submit 3 picture!!!",
-                'time': str(datetime.datetime.now())
-            }
-            return make_response(jsonify(data), 200)
-
-        # Location for save image
-        path_uploads = UPLOAD_FOLDER + datetime.datetime.now().strftime("%d.%m.%Y")
-        time_now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        create_new_folder(path_uploads)
-
-        cccd_front_file = '{}/{}_cccd_front.jpg'.format(path_uploads, time_now)
-        cccd_front_file_scale = '{}/{}_cccd_front_scale.jpg'.format(path_uploads, time_now)
-        # cccd_behind_file = '{}/{}_cccd_behind.jpg'.format(path_uploads, time_now)
-        # cccd_behind_file_scale = '{}/{}_cccd_behind_scale.jpg'.format(path_uploads, time_now)
-        cccd_portrait_file = '{}/{}_cccd_portrait.jpg'.format(path_uploads, time_now)
-        cccd_portrait_file_scale = '{}/{}_cccd_portrait_scale.jpg'.format(path_uploads, time_now)
-
-        # Decode image from base 64
-        try:
-            cccd_front_data = base64.b64decode(req_data['image1'])
-            # cccd_behind_data = base64.b64decode(req_data['image2'])
-            cccd_portrait_data = base64.b64decode(req_data['image3'])
-        except Exception as e:
-            return error_handling(e, True)
-
-        # Save image after decode from base 64
-        with open(cccd_front_file, 'wb') as f:
-            f.write(cccd_front_data)
-            f.close()
-        # with open(cccd_behind_file, 'wb') as f:
-        #     f.write(cccd_behind_data)
+        # req_data = dict(request.get_json())
+        # if 'image1' not in req_data or 'image2' not in req_data or 'image3' not in req_data:
+        #     data = {
+        #         'status': 400,
+        #         'message': "Please submit 3 picture!!!",
+        #         'time': str(datetime.datetime.now())
+        #     }
+        #     return make_response(jsonify(data), 200)
+        #
+        # # Location for save image
+        # path_uploads = UPLOAD_FOLDER + datetime.datetime.now().strftime("%d.%m.%Y")
+        # time_now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        # create_new_folder(path_uploads)
+        #
+        # cccd_front_file = '{}/{}_cccd_front.jpg'.format(path_uploads, time_now)
+        # cccd_front_file_scale = '{}/{}_cccd_front_scale.jpg'.format(path_uploads, time_now)
+        # # cccd_behind_file = '{}/{}_cccd_behind.jpg'.format(path_uploads, time_now)
+        # # cccd_behind_file_scale = '{}/{}_cccd_behind_scale.jpg'.format(path_uploads, time_now)
+        # cccd_portrait_file = '{}/{}_cccd_portrait.jpg'.format(path_uploads, time_now)
+        # cccd_portrait_file_scale = '{}/{}_cccd_portrait_scale.jpg'.format(path_uploads, time_now)
+        #
+        # # Decode image from base 64
+        # try:
+        #     cccd_front_data = base64.b64decode(req_data['image1'])
+        #     # cccd_behind_data = base64.b64decode(req_data['image2'])
+        #     cccd_portrait_data = base64.b64decode(req_data['image3'])
+        # except Exception as e:
+        #     return error_handling(e, True)
+        #
+        # # Save image after decode from base 64
+        # with open(cccd_front_file, 'wb') as f:
+        #     f.write(cccd_front_data)
         #     f.close()
-        with open(cccd_portrait_file, 'wb') as f:
-            f.write(cccd_portrait_data)
-            f.close()
-
-        # Resize image
-        PreprocesingImage.scale_image_with_path(cccd_portrait_file, 500, cccd_portrait_file_scale)
-        warped_image = PreprocesingImage.crop_card(cccd_front_file, 500)
-        image_cccd_front = PreprocesingImage.scale_image_wit_image(warped_image, 500, cccd_front_file_scale)
-
-        # Template Checking
-        # result_template_checking_file = '{}/{}_result_template_checking.jpg'.format(path_uploads, time_now)
-        try:
-            logging.info("Start Template checking")
-            # template_checking_model = TemplateChecking(cccd_front_file)
-            message_template_checking = TemplateChecking.processing_with_image(image_cccd_front)
-            logging.info("Finish Template checking")
-        except Exception as e:
-            return error_handling(e, True)
-
-        # Facial Verification
-        try:
-            logging.info("Start Facial Verification")
-            face_model = FaceVerify()
-            img1, img2, message_facial_distance = face_model.get_distance(cccd_front_file_scale,
-                                                                          cccd_portrait_file_scale)
-            logging.info("Finish Facial Verification")
-            if not message_facial_distance:
-                return error_handling("In facial verification")
-        except Exception as e:
-            return error_handling(e, True)
-
-        # OCR
-        try:
-            logging.info("Start OCR")
-            message_ocr = PerspectiveTransform(cccd_front_file). \
-                processing_without_preprocessing_image(warped=warped_image)
-            logging.info("Finish OCR")
-        except Exception as e:
-            return error_handling(e, True)
-
+        # # with open(cccd_behind_file, 'wb') as f:
+        # #     f.write(cccd_behind_data)
+        # #     f.close()
+        # with open(cccd_portrait_file, 'wb') as f:
+        #     f.write(cccd_portrait_data)
+        #     f.close()
+        #
+        # # Resize image
+        # PreprocesingImage.scale_image_with_path(cccd_portrait_file, 500, cccd_portrait_file_scale)
+        # warped_image = PreprocesingImage.crop_card(cccd_front_file, 500)
+        # image_cccd_front = PreprocesingImage.scale_image_wit_image(warped_image, 500, cccd_front_file_scale)
+        #
+        # # Template Checking
+        # # result_template_checking_file = '{}/{}_result_template_checking.jpg'.format(path_uploads, time_now)
+        # try:
+        #     logging.info("Start Template checking")
+        #     # template_checking_model = TemplateChecking(cccd_front_file)
+        #     message_template_checking = TemplateChecking.processing_with_image(image_cccd_front)
+        #     logging.info("Finish Template checking")
+        # except Exception as e:
+        #     return error_handling(e, True)
+        #
+        # # Facial Verification
+        # try:
+        #     logging.info("Start Facial Verification")
+        #     face_model = FaceVerify()
+        #     img1, img2, message_facial_distance = face_model.get_distance(cccd_front_file_scale,
+        #                                                                   cccd_portrait_file_scale)
+        #     logging.info("Finish Facial Verification")
+        #     if not message_facial_distance:
+        #         return error_handling("In facial verification")
+        # except Exception as e:
+        #     return error_handling(e, True)
+        #
+        # # OCR
+        # try:
+        #     logging.info("Start OCR")
+        #     message_ocr = PerspectiveTransform(cccd_front_file). \
+        #         processing_without_preprocessing_image(warped=warped_image)
+        #     logging.info("Finish OCR")
+        # except Exception as e:
+        #     return error_handling(e, True)
+        #
         with open("uploads/2019-09-30_00-47-05_cccd_front_scale.jpg", "rb") as image_file:
             image_result = "data:image/jpeg;base64," + str(base64.b64encode(image_file.read()), 'utf-8')
+
+        message_template_checking = "Testing"
+        message_ocr = "Testing"
+        message_facial_distance = "Testing"
+
         data = {
             'status': 200,
             'message_template_checking': str(message_template_checking),
