@@ -105,10 +105,11 @@ class PreprocesingImage(object):
         return image_resize
 
     @staticmethod
-    def scale_image_wit_image(image, height, save_path=None):
+    def scale_image_wit_image(image, height, save_path=[]):
         image_resize = imutils.resize(image, height=height)
-        if save_path is not None:
-            cv.imwrite(save_path, image_resize)
+        for path in save_path:
+            # if save_path is not None:
+            cv.imwrite(path, image_resize)
         return image_resize
 
     @staticmethod
