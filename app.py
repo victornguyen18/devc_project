@@ -174,7 +174,7 @@ def json_image_post():
 
 
 @app.route('/json-image-post-test/', methods=['POST'])
-def json_image_post():
+def json_image_post_test():
     with open("uploads/2019-09-30_00-47-05_cccd_front_scale.jpg", "rb") as image_file:
         image_result = "data:image/jpeg;base64," + str(base64.b64encode(image_file.read()), 'utf-8')
     data = {
