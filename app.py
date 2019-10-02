@@ -159,7 +159,8 @@ def json_image_post():
         #     return error_handling(e, True)
         #
         with open("uploads/2019-09-30_00-47-05_cccd_front_scale.jpg", "rb") as image_file:
-            image_result = "data:image/jpeg;base64," + str(base64.b64encode(image_file.read()), 'utf-8')
+            # image_result = "data:image/jpeg;base64," + str(base64.b64encode(image_file.read()), 'utf-8')
+            image_result = str(base64.b64encode(image_file.read()), 'utf-8')
 
         message_template_checking = "Testing"
         message_ocr = "Testing"
