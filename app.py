@@ -158,19 +158,36 @@ def json_image_post():
         except Exception as e:
             return error_handling(e, True)
 
-        # with open(result_template_checking_file, "rb") as image_file:
-        #     image_1_result = str(base64.b64encode(image_file.read()), 'utf-8')
+        with open("uploads/2019-09-30_00-47-05_cccd_front_scale.jpg", "rb") as image_file:
+            image_result = "data:image/jpeg;base64," + str(base64.b64encode(image_file.read()), 'utf-8')
         data = {
             'status': 200,
             'message_template_checking': str(message_template_checking),
             'message_OCR': str(message_ocr),
             'message_facial': str(message_facial_distance),
             'message': "Successful",
-            # 'image1Result': image_1_result,
+            'image_result': image_result,
             'time': str(datetime.datetime.now())
         }
         logging.info(data)
         return make_response(jsonify(data), 200)
+
+
+@app.route('/json-image-post-test/', methods=['POST'])
+def json_image_post():
+    with open("uploads/2019-09-30_00-47-05_cccd_front_scale.jpg", "rb") as image_file:
+        image_result = "data:image/jpeg;base64," + str(base64.b64encode(image_file.read()), 'utf-8')
+    data = {
+        'status': 200,
+        'message_template_checking': 'Testing template_checking',
+        'message_OCR': "Testing OCR",
+        'message_facial': "Testing facial",
+        'message': "Successful",
+        'image_result': image_result,
+        'time': str(datetime.datetime.now())
+    }
+    logging.info(data)
+    return make_response(jsonify(data), 200)
 
 
 if __name__ == '__main__':
