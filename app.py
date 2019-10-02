@@ -133,10 +133,13 @@ def json_image_post():
             f.close()
 
         # Resize image
-        PreprocesingImage.scale_image_with_path(cccd_portrait_file, 500, cccd_portrait_file_scale)
-        warped_image = PreprocesingImage.crop_card(cccd_front_file, 500)
-        image_cccd_front = PreprocesingImage.scale_image_wit_image(warped_image, 500,
-                                                                   [cccd_front_file_scale, file_save_path])
+        try:
+            PreprocesingImage.scale_image_with_path(cccd_portrait_file, 500, cccd_portrait_file_scale)
+            warped_image = PreprocesingImage.crop_card(cccd_front_file, 500)
+            image_cccd_front = PreprocesingImage.scale_image_wit_image(warped_image, 500,
+                                                                       [cccd_front_file_scale, file_save_path])
+        except Exception as e:
+            return error_handling(e, True)
 
         # Template Checking
         # result_template_checking_file = '{}/{}_result_template_checking.jpg'.format(path_uploads, time_now)
