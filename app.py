@@ -82,7 +82,7 @@ def decode_image():
         return "Where is the image?"
 
 
-@app.route('/json-image-post/', methods=['POST'])
+@app.route('/json-image-post/', methods=['POST', 'GET'])
 def json_image_post():
     logging.info("Request image is running")
     if request.method == 'POST':
@@ -180,6 +180,8 @@ def json_image_post():
         }
         logging.info(data)
         return make_response(jsonify(data), 200)
+    else:
+        return render_template('homepage.html')
 
 
 @app.route('/json-image-post-test/', methods=['POST'])
