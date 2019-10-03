@@ -255,7 +255,7 @@ class TemplateChecking(object):
                           ]
         show_image(national_symbol)
 
-        standard_format_cccd_cd = 'image/template_checking/standard_format_CCCd.jpg'
+        standard_format_cccd_cd = 'image/template_checking/standard_format_CCCD_4.jpg'
         format_standard = cv.imread(standard_format_cccd_cd, cv.IMREAD_GRAYSCALE)
         # show_image(format_standard)
 
@@ -265,7 +265,7 @@ class TemplateChecking(object):
         loc = np.where(res >= 0.83)
         print(loc)
         print(len(loc[0]))
-        if len(loc[0]) > 20:
+        if len(loc[0]) > 30:
             result_image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
             return True, result_image
         else:
