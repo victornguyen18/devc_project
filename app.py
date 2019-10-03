@@ -207,6 +207,113 @@ def json_image_post():
         return render_template('homepage.html')
 
 
+@app.route('/fault-detection/', methods=['POST', 'GET'])
+def fault_detection():
+    logging.info("Request image is running")
+
+    # Location for save image
+    date_now = datetime.datetime.now().strftime("%d.%m.%Y")
+
+    path_uploads = UPLOAD_FOLDER + date_now
+    time_now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    create_new_folder(path_uploads)
+
+    folder_save_path = STATIC_FOLDER + date_now
+    create_new_folder(folder_save_path)
+    file_save_path = '{}/{}_result.jpg'.format(folder_save_path, time_now)
+
+    if request.method == 'POST':
+        cccd_front_file = '{}/{}_cccd_front.jpg'.format(path_uploads, time_now)
+        cccd_front_file_scale = '{}/{}_cccd_front_scale.jpg'.format(path_uploads, time_now)
+        # cccd_behind_file = '{}/{}_cccd_behind.jpg'.format(path_uploads, time_now)
+        # cccd_behind_file_scale = '{}/{}_cccd_behind_scale.jpg'.format(path_uploads, time_now)
+        cccd_portrait_file = '{}/{}_cccd_portrait.jpg'.format(path_uploads, time_now)
+        cccd_portrait_file_scale = '{}/{}_cccd_portrait_scale.jpg'.format(path_uploads, time_now)
+
+        # Decode image from base 64
+        try:
+            cccd_front_data = request.files['image1']
+            cccd_front_data.save(cccd_front_file)
+            cccd_portrait_data = request.files['image2']
+            cccd_portrait_data.save(cccd_portrait_file)
+        except Exception as e:
+            return error_handling(e, True)
+
+        # Resize image
+        try:
+            logging.info("Start Resize & Crop Image")
+            cccd_portrait_resize = PreprocesingImage.scale_image_with_path(cccd_portrait_file, 500,
+                                                                           cccd_portrait_file_scale)
+            cccd_front_resize = PreprocesingImage.scale_image_with_path(cccd_front_file, 500)
+            warped_image = PreprocesingImage.crop_card(cccd_front_file, 500)
+            image_cccd_front = PreprocesingImage.scale_image_with_image(warped_image, 500,
+                                                                        [cccd_front_file_scale])
+            logging.info("Finish Resize & Crop Image")
+        except Exception as e:
+            return error_handling(e, True)
+
+        # Template Checking
+        # result_template_checking_file = '{}/{}_result_template_checking.jpg'.format(path_uploads, time_now)
+        try:
+            logging.info("Start Template checking")
+            # template_checking_model = TemplateChecking(cccd_front_file)
+            # message_template_checking, image_cccd_front_result = template_checking_model.processing()
+            message_template_checking, image_cccd_front_result = TemplateChecking.processing_with_image(
+                image_cccd_front, True)
+            PreprocesingImage.write_image(image_cccd_front_result, file_save_path)
+            logging.info("Finish Template checking")
+        except Exception as e:
+            return error_handling(e, True)
+
+        # Facial Verification
+        try:
+            logging.info("Start Facial Verification")
+            face_model = FaceVerifyWithImage()
+            img1, img2, message_facial_distance = face_model.verify(cccd_front_resize,
+                                                                    cccd_portrait_resize,
+                                                                    0.119)
+            if not message_facial_distance:
+                image_cccd_front_result = face_model.draw_rectangle_face(image_cccd_front_result, file_save_path)
+            logging.info("Finish Facial Verification")
+        except Exception as e:
+            return error_handling(e, True)
+
+        # OCR
+        # status_ocr = True
+        # message_ocr = ""
+        try:
+            logging.info("Start OCR")
+            status_ocr, message_ocr = PerspectiveTransform(cccd_front_file). \
+                processing_without_pre_processing_image(warped_image, True)
+            logging.info("Finish OCR")
+        except Exception as e:
+            return error_handling(e, True)
+
+        if status_ocr:
+            message_ocr = True
+
+        if message_template_checking and status_ocr and message_facial_distance:
+            message = "Successful"
+        else:
+            message = "Detect fault on your identity card!!!!"
+            if not status_ocr:
+                message += message_ocr
+
+        data = {
+            'status': 200,
+            'message_template_checking': str(message_template_checking),
+            'message_OCR': str(message_ocr),
+            'message_facial': str(message_facial_distance),
+            'message': message,
+            'image_result': "{}/static/{}/{}_result.jpg".format(app.config['APP_URL'], date_now, time_now),
+            'time': str(datetime.datetime.now())
+        }
+        logging.info(data)
+        return make_response(jsonify(data), 200)
+    else:
+        return render_template('detection_form_partial.html')
+
+
 @app.route('/json-image-post-test/', methods=['POST'])
 def json_image_post_test():
     with open("uploads/2019-09-30_00-47-05_cccd_front_scale.jpg", "rb") as image_file:
