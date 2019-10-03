@@ -165,20 +165,23 @@ def json_image_post():
             img1, img2, message_facial_distance = face_model.verify(cccd_front_resize,
                                                                     cccd_portrait_resize,
                                                                     0.119)
+            if not message_facial_distance:
+                image_cccd_front_result = face_model.draw_rectangle_face(image_cccd_front_result, file_save_path)
             logging.info("Finish Facial Verification")
         except Exception as e:
             return error_handling(e, True)
 
-        # # OCR
-        # try:
-        #     logging.info("Start OCR")
-        #     status_ocr, message_ocr = PerspectiveTransform(cccd_front_file). \
-        #         processing_without_pre_processing_image(warped_image, True)
-        #     logging.info("Finish OCR")
-        # except Exception as e:
-        #     return error_handling(e, True)
-        status_ocr = True
-        message_ocr = ""
+        # OCR
+        # status_ocr = True
+        # message_ocr = ""
+        try:
+            logging.info("Start OCR")
+            status_ocr, message_ocr = PerspectiveTransform(cccd_front_file). \
+                processing_without_pre_processing_image(warped_image, True)
+            logging.info("Finish OCR")
+        except Exception as e:
+            return error_handling(e, True)
+
         if status_ocr:
             message_ocr = True
 

@@ -10,6 +10,7 @@ import tensorflow as tf
 from matplotlib import pyplot as plt
 from keras.models import load_model
 from keras import backend as K
+from controller.preprocessing_image import PreprocesingImage
 
 warnings.simplefilter('ignore')
 
@@ -36,11 +37,11 @@ def BGR2Gray(image):
     return cv.cvtColor(image, cv.COLOR_BGR2GRAY)
 
 
-def denote_face(image, face):
+def denote_face(image, face, color=(255, 0, 0)):
     """ function to denote location of face on image """
     img = image.copy()
     for (x, y, w, h) in face:
-        cv.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
+        cv.rectangle(img, (x, y), (x + w, y + h), color, 2)
 
     return img
 
@@ -206,9 +207,7 @@ class FaceVerifyWithImage(object):
     def verify(self, image1, image2, threshold=0.2):
         """ verify whether or not images from path1 and path2 are same person """
         img1, img2, distance = self.get_distance(image1, image2)
-        show_image(img1)
-        show_image(img2)
-        print(distance)
+
         if distance < threshold:
             return img1, img2, True
 
@@ -233,6 +232,15 @@ class FaceVerifyWithImage(object):
         # crop_array = np.array(crop_rgb, dtype=K.floatx()) / 255.0
 
         return crop_rgb
+
+    def draw_rectangle_face(self, image_input, path_save=None):
+        faces_portrait = cascade_detector(image_input, self.xml,
+                                          scale_factor=1.3,
+                                          min_neighbors=5)
+        rec_portrait_images = denote_face(image_input, faces_portrait, (255, 0, 0))
+        if path_save is not None:
+            PreprocesingImage.write_image(BGR2RGB(rec_portrait_images), path_save)
+        return rec_portrait_images
 
 
 class FacialVerification(object):

@@ -270,7 +270,8 @@ class TemplateChecking(object):
         print(loc)
         print(len(loc[0]))
         if len(loc[0]) > 30:
-            result_image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+            # result_image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+            result_image = image
             return True, result_image
         else:
             result_image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
