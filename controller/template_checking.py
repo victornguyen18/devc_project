@@ -6,6 +6,7 @@ import cv2 as cv
 import numpy as np
 
 from matplotlib import pyplot as plt
+from controller.preprocessing_image import PreprocesingImage
 
 PROJECT_HOME = os.path.dirname(os.path.realpath(__file__))
 
@@ -256,11 +257,13 @@ class TemplateChecking(object):
         show_image(national_symbol)
 
         standard_format_cccd_cd = 'image/template_checking/standard_format_CCCD_4.jpg'
-        format_standard = cv.imread(standard_format_cccd_cd, cv.IMREAD_GRAYSCALE)
-        # show_image(format_standard)
+        format_standard_raw = cv.imread(standard_format_cccd_cd, cv.IMREAD_GRAYSCALE)
+        format_standard = PreprocesingImage.scale_image_with_image(format_standard_raw, 500)
+        show_image(format_standard)
 
         w, h = national_symbol.shape[::-1]
         res = cv.matchTemplate(format_standard, national_symbol, cv.TM_CCOEFF_NORMED)
+
         # result = cv2.matchTemplate(gray_img, template, cv2.TM_CCOEFF_NORMED)
         loc = np.where(res >= 0.83)
         print(loc)
