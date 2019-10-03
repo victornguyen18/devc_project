@@ -237,7 +237,7 @@ class FaceVerifyWithImage(object):
         faces_portrait = cascade_detector(image_input, self.xml,
                                           scale_factor=1.3,
                                           min_neighbors=5)
-        rec_portrait_images = denote_face(image_input, faces_portrait, (255, 0, 0))
+        rec_portrait_images = denote_face(image_input.copy(), faces_portrait, (255, 0, 0))
         if path_save is not None:
             PreprocesingImage.write_image(BGR2RGB(rec_portrait_images), path_save)
         return rec_portrait_images

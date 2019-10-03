@@ -273,7 +273,7 @@ class TemplateChecking(object):
             # result_image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
             return True, image
         else:
-            result_image = image
+            result_image = image.copy()
             cv.rectangle(result_image, (15, 5), (w + 15, h), (255, 0, 0), 2)
             return False, result_image
 
