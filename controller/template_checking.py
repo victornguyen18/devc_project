@@ -210,6 +210,7 @@ class TemplateChecking(object):
 
     def processing(self, path_save='result_template_checking.jpg'):
         bin_img = self.cccd_warped
+        show_image(bin_img)
 
         ratio_y = 3.1 / 8.4
         ratio_x1 = 0.25 / 5.4
@@ -240,6 +241,8 @@ class TemplateChecking(object):
         else:
             bin_img = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
 
+        show_image(bin_img)
+
         ratio_y = 3.1 / 8.4
         ratio_x1 = 0.25 / 5.4
         ratio_x2 = 1.6 / 5.4
@@ -251,12 +254,12 @@ class TemplateChecking(object):
 
         standard_format_cccd_cd = 'image/template_checking/standard_format_CCCd.jpg'
         format_standard = cv.imread(standard_format_cccd_cd, cv.IMREAD_GRAYSCALE)
-        # show_image(format_standard)
+        show_image(format_standard)
 
         w, h = national_symbol.shape[::-1]
         res = cv.matchTemplate(format_standard, national_symbol, cv.TM_CCOEFF_NORMED)
         # result = cv2.matchTemplate(gray_img, template, cv2.TM_CCOEFF_NORMED)
-        loc = np.where(res >= 0.85)
+        loc = np.where(res >= 0.9)
         print(loc)
         print(len(loc[0]))
         if len(loc[0]) > 20:
