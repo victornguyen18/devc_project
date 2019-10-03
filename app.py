@@ -143,51 +143,53 @@ def json_image_post():
         except Exception as e:
             return error_handling(e, True)
 
-        # # Template Checking
-        # # result_template_checking_file = '{}/{}_result_template_checking.jpg'.format(path_uploads, time_now)
-        # try:
-        #     logging.info("Start Template checking")
-        #     # template_checking_model = TemplateChecking(cccd_front_file)
-        #     # message_template_checking, image_cccd_front_result = template_checking_model.processing()
-        #     message_template_checking, image_cccd_front_result = TemplateChecking.processing_with_image(
-        #         image_cccd_front, True)
-        #     PreprocesingImage.write_image(image_cccd_front_result, file_save_path)
-        #     logging.info("Finish Template checking")
-        # except Exception as e:
-        #     return error_handling(e, True)
-        #
-        # # Facial Verification
-        # try:
-        #     logging.info("Start Facial Verification")
-        #     face_model = FaceVerify()
-        #     img1, img2, message_facial_distance = face_model.verify(cccd_front_file_scale,
-        #                                                             cccd_portrait_file_scale)
-        #     logging.info("Finish Facial Verification")
-        #     if not message_facial_distance:
-        #         return error_handling("In facial verification")
-        # except Exception as e:
-        #     return error_handling(e, True)
+        # Template Checking
+        # result_template_checking_file = '{}/{}_result_template_checking.jpg'.format(path_uploads, time_now)
+        try:
+            logging.info("Start Template checking")
+            # template_checking_model = TemplateChecking(cccd_front_file)
+            # message_template_checking, image_cccd_front_result = template_checking_model.processing()
+            message_template_checking, image_cccd_front_result = TemplateChecking.processing_with_image(
+                image_cccd_front, True)
+            PreprocesingImage.write_image(image_cccd_front_result, file_save_path)
+            logging.info("Finish Template checking")
+        except Exception as e:
+            return error_handling(e, True)
+
+        # Facial Verification
+        try:
+            logging.info("Start Facial Verification")
+            face_model = FaceVerify()
+            img1, img2, message_facial_distance = face_model.verify(cccd_front_file_scale,
+                                                                    cccd_portrait_file_scale)
+            logging.info("Finish Facial Verification")
+            if not message_facial_distance:
+                return error_handling("In facial verification")
+        except Exception as e:
+            return error_handling(e, True)
 
         # OCR
         try:
             logging.info("Start OCR")
-            message_ocr = PerspectiveTransform(cccd_front_file). \
+            status_ocr, message_ocr = PerspectiveTransform(cccd_front_file). \
                 processing_without_pre_processing_image(warped_image, True)
             logging.info("Finish OCR")
         except Exception as e:
             return error_handling(e, True)
 
-        # if message_template_checking and message_ocr and message_facial_distance:
-        #     message = "Successful"
-        # else:
-        #     message = "Detect fault on your identity card!!!!"
+        if message_template_checking and status_ocr and message_facial_distance:
+            message = "Successful"
+        else:
+            message = "Detect fault on your identity card!!!!"
+            if not status_ocr:
+                message += message_ocr
 
         data = {
             'status': 200,
-            # 'message_template_checking': str(message_template_checking),
+            'message_template_checking': str(message_template_checking),
             'message_OCR': str(message_ocr),
-            # 'message_facial': str(message_facial_distance),
-            # 'message': message,
+            'message_facial': str(message_facial_distance),
+            'message': message,
             'image_result': "{}/static/{}/{}_result.jpg".format(app.config['APP_URL'], date_now, time_now),
             'time': str(datetime.datetime.now())
         }
