@@ -142,7 +142,7 @@ class PreprocesingImage(object):
                 pt2 = (int(x0 - 1000 * (-b)), int(y0 - 1000 * (a)))
                 cv.line(cdst, pt1, pt2, (0, 0, 255), 3, cv.LINE_AA)
 
-        show_image(cdst)
+        # show_image(cdst)
         pts = []
 
         for i in range(lines.shape[0]):

@@ -219,7 +219,7 @@ class TemplateChecking(object):
         national_symbol = bin_img[:int(bin_img.shape[0] * ratio_y),
                           int(bin_img.shape[1] * ratio_x1):int(bin_img.shape[1] * ratio_x2)
                           ]
-        standard_format_cccd_cd = 'image/template_checking/standard_format_CCCd.jpg'
+        standard_format_cccd_cd = 'image/template_checking/standard_format_CCCD_4.jpg'
         format_standard = cv.imread(standard_format_cccd_cd, cv.IMREAD_GRAYSCALE)
         # show_image(format_standard)
 
@@ -257,7 +257,7 @@ class TemplateChecking(object):
 
         standard_format_cccd_cd = 'image/template_checking/standard_format_CCCd.jpg'
         format_standard = cv.imread(standard_format_cccd_cd, cv.IMREAD_GRAYSCALE)
-        show_image(format_standard)
+        # show_image(format_standard)
 
         w, h = national_symbol.shape[::-1]
         res = cv.matchTemplate(format_standard, national_symbol, cv.TM_CCOEFF_NORMED)

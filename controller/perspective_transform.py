@@ -562,7 +562,7 @@ class PerspectiveTransform(object):
         # For part 2 just simply apply tesseract provided the image is clear enough
         text = pytesseract.image_to_string(~part_2, lang='vie')
         print(text)
-        return text
+        return True
 
 
 if __name__ == '__main__':
