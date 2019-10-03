@@ -680,12 +680,12 @@ class PerspectiveTransform(object):
                 y_2 = int(bin_img.shape[0] / ratio) - 10
                 cv.rectangle(input_image_draw, (x_1, y_1), (x_2, y_2), (255, 0, 0), 2)
                 show_image(input_image_draw)
-
+        input_image_draw_rgb = cv.cvtColor(input_image_draw, cv.COLOR_BGR2RGB)
         if not status_exp_date or not status_bod_date:
             message_ocr = message_bod_date + " " + message_exp_date
-            return False, message_ocr, input_image_draw
+            return False, message_ocr, input_image_draw_rgb
         else:
-            return True, "", input_image_draw
+            return True, "", input_image_draw_rgb
 
 
 if __name__ == '__main__':
