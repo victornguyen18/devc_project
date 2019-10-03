@@ -634,7 +634,7 @@ class PerspectiveTransform(object):
 
         show_image(part_1)
         # For part 2 just simply apply tesseract provided the image is clear enough
-        text = pytesseract.image_to_string(~part_1, lang='eng', config='--psm 6')
+        text = pytesseract.image_to_string(~part_1, lang='eng', config='-psm 6')
         print(text)
         m = re.findall("([/0-9]+)", text)
         if m:
@@ -650,7 +650,7 @@ class PerspectiveTransform(object):
 
         show_image(part_2)
         # For part 2 just simply apply tesseract provided the image is clear enough
-        text = pytesseract.image_to_string(~part_2, lang='eng', config='--psm 6')
+        text = pytesseract.image_to_string(~part_2, lang='eng', config='-psm 6')
         print(text)
         m = re.findall("([/0-9]+)", text)
         if m:
