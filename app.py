@@ -177,16 +177,15 @@ def json_image_post():
         except Exception as e:
             return error_handling(e, True)
 
+        if status_ocr:
+            message_ocr = True
+
         if message_template_checking and status_ocr and message_facial_distance:
             message = "Successful"
-            if status_ocr:
-                message_ocr = True
         else:
             message = "Detect fault on your identity card!!!!"
             if not status_ocr:
                 message += message_ocr
-            else:
-                message_ocr = True
 
         data = {
             'status': 200,
