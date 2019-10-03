@@ -38,7 +38,7 @@ def create_new_folder(local_dir):
     return new_path
 
 
-def error_handling(e, trace_back=True):
+def error_handling(e, trace_back=True, return_status=True):
     if trace_back:
         error_message = traceback.format_exc()
     else:
@@ -49,7 +49,8 @@ def error_handling(e, trace_back=True):
         'message': "Some thing is wrong. Please contact your admin!! --- [{}]".format(str(e)),
         'time': str(datetime.datetime.now())
     }
-    return make_response(jsonify(data), 200)
+    if return_status:
+        return make_response(jsonify(data), 200)
 
 
 @app.route('/', methods=['GET'])
@@ -258,12 +259,17 @@ def fault_detection():
             logging.info("Start Template checking")
             # template_checking_model = TemplateChecking(cccd_front_file)
             # message_template_checking, image_cccd_front_result = template_checking_model.processing()
-            message_template_checking, image_cccd_front_result = TemplateChecking.processing_with_image(
+            status_template_checking, image_cccd_front_result = TemplateChecking.processing_with_image(
                 image_cccd_front, True)
             PreprocesingImage.write_image(image_cccd_front_result, file_save_path)
             logging.info("Finish Template checking")
+            message_template_checking = str(status_template_checking)
         except Exception as e:
-            return error_handling(e, True)
+            status_template_checking = False
+            logging.error(e)
+            error_message = traceback.format_exc()
+            app.logger.error(error_message)
+            message_template_checking = "Error"
 
         # Facial Verification
         try:
@@ -292,7 +298,7 @@ def fault_detection():
         if status_ocr:
             message_ocr = True
 
-        if message_template_checking and status_ocr and message_facial_distance:
+        if status_template_checking and status_ocr and message_facial_distance:
             message = "Successful"
         else:
             message = "Detect fault on your identity card!!!!"
