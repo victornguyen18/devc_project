@@ -226,13 +226,16 @@ class TemplateChecking(object):
         w, h = national_symbol.shape[::-1]
         res = cv.matchTemplate(format_standard, national_symbol, cv.TM_CCOEFF_NORMED)
         # result = cv2.matchTemplate(gray_img, template, cv2.TM_CCOEFF_NORMED)
-        loc = np.where(res >= 0.8)
+        loc = np.where(res >= 0.83)
         print(loc)
         print(len(loc[0]))
-        if len(loc[0]) > 10:
-            return True
+        if len(loc[0]) > 20:
+            result_image = cv.cvtColor(bin_img, cv.COLOR_GRAY2BGR)
+            return True, result_image
         else:
-            return False
+            result_image = cv.cvtColor(bin_img, cv.COLOR_GRAY2BGR)
+            cv.rectangle(result_image, (15, 5), (w + 15, h), (0, 0, 255), 2)
+            return False, result_image
 
     @staticmethod
     def processing_with_image(image, color=False):
@@ -259,7 +262,7 @@ class TemplateChecking(object):
         w, h = national_symbol.shape[::-1]
         res = cv.matchTemplate(format_standard, national_symbol, cv.TM_CCOEFF_NORMED)
         # result = cv2.matchTemplate(gray_img, template, cv2.TM_CCOEFF_NORMED)
-        loc = np.where(res >= 0.9)
+        loc = np.where(res >= 0.83)
         print(loc)
         print(len(loc[0]))
         if len(loc[0]) > 20:
