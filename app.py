@@ -183,6 +183,8 @@ def json_image_post():
             message = "Detect fault on your identity card!!!!"
             if not status_ocr:
                 message += message_ocr
+            else:
+                message_ocr = True
 
         data = {
             'status': 200,
