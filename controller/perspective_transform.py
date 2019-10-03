@@ -1,4 +1,7 @@
 import pytesseract
+import re
+import datetime
+
 import cv2 as cv
 import numpy as np
 import math
@@ -7,6 +10,28 @@ import imutils
 
 from matplotlib import pyplot as plt
 from flask import current_app
+from controller.preprocessing_image import PreprocesingImage
+from dateutil.relativedelta import relativedelta
+
+
+def check_birthday(birthday):
+    enough_14 = birthday + relativedelta(years=+14)
+    enough_18 = birthday + relativedelta(years=+18)
+    now_time = datetime.datetime.now()
+    if now_time < enough_14:
+        return False, "It isn't enough age to have identity card!!!"
+    elif now_time < enough_18:
+        return False, "It isn't enough age to get loan!!"
+    else:
+        return True, ""
+
+
+def check_expiration_date(expiration_date):
+    now_time = datetime.datetime.now()
+    if now_time > expiration_date:
+        return False, "Your identity card has expired!!!"
+    else:
+        return True, ""
 
 
 def show_image(image):
@@ -563,6 +588,81 @@ class PerspectiveTransform(object):
         text = pytesseract.image_to_string(~part_2, lang='vie')
         print(text)
         return True
+
+    @staticmethod
+    def processing_without_pre_processing_image(image, color=False):
+        if not color:
+            warped = image
+        else:
+            warped = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+
+        # show_image(warped)
+
+        # Prepocessing image then apply tesseract
+        thres_img = cv.adaptiveThreshold(warped, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 13, 13)
+        # show_image(thres_img)
+
+        blur = cv.medianBlur(thres_img, 5)
+        # show_image(blur)
+
+        sharpened = unsharp_mask(blur, (5, 5), 150, 50, 150)
+        # show_image(sharpened)
+
+        # If some information is missing, changing the ratio
+        bin_img = ~sharpened
+
+        ratio_x_1 = 2.7 / 8.6
+        ratio_x_2 = 3.1 / 8.6
+        ratio_y_1 = 1.5 / 5.4
+        ratio_y_2 = 5.035 / 5.4
+        ratio_y_3 = 5.0 / 5.4
+
+        ratio_x_dob_beg = 2.8 / 8.6
+        ratio_x_dob_end = 6.7 / 8.6
+
+        ratio_y_dob_beg = 2.8 / 5.4
+        ratio_y_dob_end = 3.3 / 5.4
+
+        # part_1 = bin_img[int(bin_img.shape[0]*ratio_y_1):int(bin_img.shape[0]*ratio_y_2),
+        #                  int(bin_img.shape[1]*ratio_x_1):]
+
+        part_1 = bin_img[int(bin_img.shape[0] * ratio_y_dob_beg):int(bin_img.shape[0] * ratio_y_dob_end),
+                 int(bin_img.shape[1] * ratio_x_dob_beg):int(bin_img.shape[1] * ratio_x_dob_end)]
+
+        part_2 = bin_img[int(bin_img.shape[0] * ratio_y_3):,
+                 :int(bin_img.shape[1] * ratio_x_2)]
+
+        show_image(part_1)
+        # For part 2 just simply apply tesseract provided the image is clear enough
+        text = pytesseract.image_to_string(~part_1, lang='vie', config='--psm 6')
+        print(text)
+        m = re.findall("([/0-9]+)", text)
+        if m:
+            bod = m[-1]
+            bod.replace(" ", "")
+            bod_finally = bod[len(bod) - 10:len(bod)]
+            print(bod_finally)
+            bod_date = datetime.datetime.strptime(bod_finally, "%d/%m/%Y")
+            status_bod_date, message_bod_date = check_birthday(bod_date)
+            print(status_bod_date)
+            print(message_bod_date)
+            return status_bod_date, message_bod_date
+
+        show_image(part_2)
+        # For part 2 just simply apply tesseract provided the image is clear enough
+        text = pytesseract.image_to_string(~part_2, lang='vie', config='--psm 6')
+        print(text)
+        m = re.findall("([/0-9]+)", text)
+        if m:
+            exp = m[-1]
+            exp.replace(" ", "")
+            exp_finally = exp[len(exp) - 10:len(exp)]
+            exp_date = datetime.datetime.strptime(exp_finally, "%d/%m/%Y")
+            status_exp_date, message_exp_date = check_expiration_date(exp_date)
+            print(exp_date)
+            print(status_exp_date)
+            print(message_exp_date)
+            return status_exp_date, message_exp_date
 
 
 if __name__ == '__main__':
