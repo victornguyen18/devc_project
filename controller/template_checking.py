@@ -257,8 +257,9 @@ class TemplateChecking(object):
         show_image(national_symbol)
 
         standard_format_cccd_cd = 'image/template_checking/standard_format_CCCD_4.jpg'
-        format_standard_raw = cv.imread(standard_format_cccd_cd, cv.IMREAD_GRAYSCALE)
-        format_standard = PreprocesingImage.scale_image_with_image(format_standard_raw, 500)
+        format_standard = cv.imread(standard_format_cccd_cd, cv.IMREAD_GRAYSCALE)
+#         format_standard_raw = cv.imread(standard_format_cccd_cd, cv.IMREAD_GRAYSCALE)
+#         format_standard = PreprocesingImage.scale_image_with_image(format_standard_raw, 500)
         show_image(format_standard)
 
         w, h = national_symbol.shape[::-1]
