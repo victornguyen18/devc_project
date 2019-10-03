@@ -590,7 +590,8 @@ class PerspectiveTransform(object):
         return True
 
     @staticmethod
-    def processing_without_pre_processing_image(image, color=False):
+    def processing_without_pre_processing_image(image, color=False, input_image_draw=None):
+        ratio = image.shape[0] / input_image_draw.shape[0]
         if not color:
             warped = image
         else:
@@ -637,16 +638,26 @@ class PerspectiveTransform(object):
         text = pytesseract.image_to_string(~part_1, lang='eng', config='-psm 6')
         print(text)
         m = re.findall("([/0-9]+)", text)
-        if m:
-            bod = m[-1]
-            bod.replace(" ", "")
-            bod_finally = bod[len(bod) - 10:len(bod)]
-            print(bod_finally)
-            bod_date = datetime.datetime.strptime(bod_finally, "%d/%m/%Y")
-            status_bod_date, message_bod_date = check_birthday(bod_date)
-            print(status_bod_date)
-            print(message_bod_date)
-            return status_bod_date, message_bod_date
+        try:
+            if m:
+                bod = m[-1]
+                bod.replace(" ", "")
+                bod_finally = bod[len(bod) - 10:len(bod)]
+                print(bod_finally)
+                bod_date = datetime.datetime.strptime(bod_finally, "%d/%m/%Y")
+                status_bod_date, message_bod_date = check_birthday(bod_date)
+                print(status_bod_date)
+                print(message_bod_date)
+                if not status_bod_date:
+                    x_1 = int(bin_img.shape[1] * ratio_x_dob_beg / ratio)
+                    y_1 = int(bin_img.shape[0] * ratio_y_dob_beg / ratio)
+                    x_2 = int(bin_img.shape[1] * ratio_x_dob_end / ratio)
+                    y_2 = int(bin_img.shape[0] * ratio_y_dob_end / ratio)
+                    cv.rectangle(input_image_draw, (x_1, y_1), (x_2, y_2), (255, 0, 0), 2)
+                    show_image(input_image_draw)
+        except Exception as e:
+            print(e)
+            pass
 
         show_image(part_2)
         # For part 2 just simply apply tesseract provided the image is clear enough
@@ -662,7 +673,19 @@ class PerspectiveTransform(object):
             print(exp_date)
             print(status_exp_date)
             print(message_exp_date)
-            return status_exp_date, message_exp_date
+            if not status_exp_date:
+                x_1 = 20
+                y_1 = int(bin_img.shape[0] * ratio_y_3 / ratio)
+                x_2 = int(bin_img.shape[1] * ratio_x_2 / ratio)
+                y_2 = int(bin_img.shape[0] / ratio) - 10
+                cv.rectangle(input_image_draw, (x_1, y_1), (x_2, y_2), (255, 0, 0), 2)
+                show_image(input_image_draw)
+
+        if not status_exp_date or not status_bod_date:
+            message_ocr = message_bod_date + " " + message_exp_date
+            return False, message_ocr, input_image_draw
+        else:
+            return True, "", input_image_draw
 
 
 if __name__ == '__main__':

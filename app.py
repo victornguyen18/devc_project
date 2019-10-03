@@ -178,7 +178,7 @@ def json_image_post():
         try:
             logging.info("Start OCR")
             status_ocr, message_ocr = PerspectiveTransform(cccd_front_file). \
-                processing_without_pre_processing_image(warped_image, True)
+                processing_without_pre_processing_image(warped_image, True, image_cccd_front_result)
             logging.info("Finish OCR")
         except Exception as e:
             return error_handling(e, True)
@@ -289,9 +289,10 @@ def fault_detection():
         # message_ocr = ""
         try:
             logging.info("Start OCR")
-            status_ocr, message_ocr = PerspectiveTransform(cccd_front_file). \
-                processing_without_pre_processing_image(warped_image, True)
+            status_ocr, message_ocr, image_cccd_front_result = PerspectiveTransform(cccd_front_file). \
+                processing_without_pre_processing_image(warped_image, True, image_cccd_front_result)
             logging.info("Finish OCR")
+            PreprocesingImage.write_image(image_cccd_front_result, file_save_path)
         except Exception as e:
             return error_handling(e, True)
 
