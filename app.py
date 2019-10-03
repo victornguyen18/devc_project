@@ -7,7 +7,7 @@ import base64
 from flask import Flask, request, render_template, jsonify, make_response
 from werkzeug.utils import secure_filename
 from controller.template_checking import TemplateChecking
-from controller.facial_verification import FaceVerify
+from controller.facial_verification import FaceVerify, FaceVerifyWithImage
 from controller.perspective_transform import PerspectiveTransform
 from controller.preprocessing_image import PreprocesingImage
 
@@ -135,7 +135,9 @@ def json_image_post():
         # Resize image
         try:
             logging.info("Start Resize & Crop Image")
-            PreprocesingImage.scale_image_with_path(cccd_portrait_file, 500, cccd_portrait_file_scale)
+            cccd_portrait_resize = PreprocesingImage.scale_image_with_path(cccd_portrait_file, 500,
+                                                                           cccd_portrait_file_scale)
+            cccd_front_resize = PreprocesingImage.scale_image_with_path(cccd_front_file, 500)
             warped_image = PreprocesingImage.crop_card(cccd_front_file, 500)
             image_cccd_front = PreprocesingImage.scale_image_with_image(warped_image, 500,
                                                                         [cccd_front_file_scale])
@@ -159,24 +161,24 @@ def json_image_post():
         # Facial Verification
         try:
             logging.info("Start Facial Verification")
-            face_model = FaceVerify()
-            img1, img2, message_facial_distance = face_model.verify(cccd_front_file_scale,
-                                                                    cccd_portrait_file_scale)
+            face_model = FaceVerifyWithImage()
+            img1, img2, message_facial_distance = face_model.verify(cccd_front_resize,
+                                                                    cccd_portrait_resize,
+                                                                    0.119)
             logging.info("Finish Facial Verification")
-            if not message_facial_distance:
-                return error_handling("In facial verification")
         except Exception as e:
             return error_handling(e, True)
 
-        # OCR
-        try:
-            logging.info("Start OCR")
-            status_ocr, message_ocr = PerspectiveTransform(cccd_front_file). \
-                processing_without_pre_processing_image(warped_image, True)
-            logging.info("Finish OCR")
-        except Exception as e:
-            return error_handling(e, True)
-
+        # # OCR
+        # try:
+        #     logging.info("Start OCR")
+        #     status_ocr, message_ocr = PerspectiveTransform(cccd_front_file). \
+        #         processing_without_pre_processing_image(warped_image, True)
+        #     logging.info("Finish OCR")
+        # except Exception as e:
+        #     return error_handling(e, True)
+        status_ocr = True
+        message_ocr = ""
         if status_ocr:
             message_ocr = True
 

@@ -36,23 +36,6 @@ def BGR2Gray(image):
     return cv.cvtColor(image, cv.COLOR_BGR2GRAY)
 
 
-# def show_image(image, img_format='RGB', figsize=(8, 6)):
-#     """ function to show image """
-#     if img_format == 'RGB' or img_format == 'Gray':
-#         pass
-#     elif img_format == 'BGR':
-#         image = BGR2RGB(image)
-#     else:
-#         raise ValueError('format should be "RGB", "BGR" or "Gray"')
-#
-#     fig, ax = plt.subplots(figsize=figsize)
-#     if format == 'Gray':
-#         ax.imshow(image, format='gray')
-#     else:
-#         ax.imshow(image)
-#     return fig
-
-
 def denote_face(image, face):
     """ function to denote location of face on image """
     img = image.copy()
@@ -173,6 +156,71 @@ class FaceVerify(object):
     def _process_image(self, path):
         """ read and pre-process the images """
         image = read_image(path)
+
+        # frontal face detection
+        faces = cascade_detector(image, xml=self.xml, scale_factor=1.3, min_neighbors=5)
+
+        # crop frontal face areas
+        crop = crop_face(image, faces, scale_factor=1.3, target_size=(256, 256))
+        crop_landmark = crop_using_facial_landmark(crop)
+        crop_landmark_resize = imutils.resize(crop_landmark, 96, 96)
+        crop_rgb = BGR2RGB(crop_landmark_resize)
+        # crop_array = np.array(crop_rgb, dtype=K.floatx()) / 255.0
+
+        return crop_rgb
+
+
+class FaceVerifyWithImage(object):
+    """ class for face verification """
+
+    def __init__(self,
+                 path='controller/pretrained_model/facenet-margin-04-final.h5',
+                 xml='controller/pretrained_model/haarcascade_frontalface_default.xml'):
+        """ initialize the face verification api """
+        self.path = path
+        self.xml = xml
+        self.model = None
+        K.clear_session()
+
+    def get_distance(self, image_1, image_2):
+        """ get the distance between two images from path1 and path2 """
+        if self.model is None:
+            self._load_model()
+
+        # pre-process the images
+        img1 = self._process_image(image_1)
+        img2 = self._process_image(image_2)
+
+        # make predictions
+        imgs = np.array([img1, img2])
+        predictions = self.model.predict(imgs)
+
+        pred1 = predictions[0]
+        pred2 = predictions[1]
+
+        # calculate the Euclidean distance
+        distance = np.sqrt(np.sum(np.square(pred1 - pred2)))
+
+        return img1, img2, distance
+
+    def verify(self, image1, image2, threshold=0.2):
+        """ verify whether or not images from path1 and path2 are same person """
+        img1, img2, distance = self.get_distance(image1, image2)
+        show_image(img1)
+        show_image(img2)
+        print(distance)
+        if distance < threshold:
+            return img1, img2, True
+
+        return img1, img2, False
+
+    def _load_model(self):
+        """ load the pre-defined cnn model for face verification """
+        self.model = load_model(self.path, custom_objects={'tf': tf})
+
+        return
+
+    def _process_image(self, image):
 
         # frontal face detection
         faces = cascade_detector(image, xml=self.xml, scale_factor=1.3, min_neighbors=5)
