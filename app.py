@@ -179,6 +179,8 @@ def json_image_post():
 
         if message_template_checking and status_ocr and message_facial_distance:
             message = "Successful"
+            if status_ocr:
+                message_ocr = True
         else:
             message = "Detect fault on your identity card!!!!"
             if not status_ocr:
