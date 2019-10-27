@@ -13,11 +13,11 @@ Jinja2
 MarkupSafe
 Werkzeug
 pytesseract
-tesseract
+tesseract==1.14.0
 tensorflow
 opencv-python==3.2.0.8
 cmake
-dlib
+dlib==19.4
 imutils
 scikit-image
 Keras==2.2.5
