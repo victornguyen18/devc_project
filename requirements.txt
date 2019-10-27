@@ -13,7 +13,7 @@ Jinja2
 MarkupSafe
 Werkzeug
 pytesseract
-tesseract==1.14.0
+tesseract==1.15.0
 tensorflow
 opencv-python==3.2.0.8
 cmake
