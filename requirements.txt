@@ -14,7 +14,7 @@ MarkupSafe
 Werkzeug
 pytesseract
 tesseract
-tensorflow==1.15.0
+tensorflow==1.15.2
 opencv-python==3.2.0.8
 cmake
 dlib==19.4
