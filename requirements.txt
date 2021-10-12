@@ -15,7 +15,7 @@ Werkzeug
 pytesseract
 tesseract
 tensorflow==1.15.2
-opencv-python==3.2.0.8
+opencv-python==3.4.7.28
 cmake
 dlib==19.4
 imutils
